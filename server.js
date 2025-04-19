@@ -45,4 +45,3 @@ db.sequelize.sync().then(() => {
   });
 });
 
-//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
