@@ -44,3 +44,5 @@ db.sequelize.sync().then(() => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
 });
+
+//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
