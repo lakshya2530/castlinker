@@ -1,116 +1,14 @@
-// const express = require('express');
-// const router = express.Router();
-// const db = require('../models');
-// const Job  = db.job;
-
-// const { Op } = require('sequelize');
-
-// // 🔸 CREATE
-// router.post('/create-job', async (req, res) => {
-//   try {
-//     const job = await Job.create(req.body);
-//     res.json(job);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// // 🔸 READ (All with optional filters)
-// router.get('/', async (req, res) => {
-//   const { title, location, type, tags } = req.query;
-//   const where = {};
-
-//   if (title) where.job_title = { [Op.iLike]: `%${title}%` };
-//   if (location) where.location = { [Op.iLike]: `%${location}%` };
-//   if (type) where.job_type = type;
-//   if (tags) {
-//     const tagsArray = Array.isArray(tags) ? tags : [tags];
-//     where.tags = { [Op.contains]: tagsArray };
-//   }
-
-//   try {
-//     const jobs = await Job.findAll({ where });
-//     res.json(jobs);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// // 🔸 READ Single
-// router.get('/get-data/:id', async (req, res) => {
-//   try {
-//     const job = await Job.findByPk(req.params.id);
-//     if (!job) return res.status(404).json({ error: 'Job not found' });
-//     res.json(job);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// // 🔸 UPDATE
-// router.put('/update-job/:id', async (req, res) => {
-//   try {
-//     const job = await Job.findByPk(req.params.id);
-//     if (!job) return res.status(404).json({ error: 'Job not found' });
-
-//     await job.update(req.body);
-//     res.json(job);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// // 🔸 DELETE
-// router.delete('/delete-jobs/:id', async (req, res) => {
-//   try {
-//     const job = await Job.findByPk(req.params.id);
-//     if (!job) return res.status(404).json({ error: 'Job not found' });
-
-//     await job.destroy();
-//     res.json({ message: 'Job deleted' });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// module.exports = router;
-
-
-// const express = require('express');
-// const router = express.Router();
-// const { Job } = require('../models');
-// const { Op } = require('sequelize');
-
-// // 🔹 Get all jobs (with optional filters)
-// router.get('/', async (req, res) => {
-//   const { title, location, type, tags } = req.query;
-//   const where = {};
-
-//   if (title) where.job_title = { [Op.iLike]: `%${title}%` };
-//   if (location) where.location = { [Op.iLike]: `%${location}%` };
-//   if (type) where.job_type = type;
-//   if (tags) where.tags = { [Op.contains]: [tags] };
-
-//   try {
-//     const jobs = await Job.findAll({ where });
-//     res.json(jobs);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// module.exports = router;
+// routes/jobs.js
 const express = require('express');
-const router = express.Router();
 const { Job } = require('../models');
 const { Op } = require('sequelize');
+const authenticateToken = require('../middleware/auth');
+const router = express.Router();
 
-// 🔍 GET: List + Filters
-router.get('/', async (req, res) => {
+// 🔍 GET jobs for logged-in user
+router.get('/', authenticateToken, async (req, res) => {
   const { title, location, type, tags } = req.query;
-  const where = {};
+  const where = { user_id: req.user.user_id }; // Only fetch jobs for the logged-in user
 
   if (title) where.job_title = { [Op.iLike]: `%${title}%` };
   if (location) where.location = { [Op.iLike]: `%${location}%` };
@@ -125,21 +23,25 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 🆕 POST: Create a new job
-router.post('/', async (req, res) => {
+// 🆕 Create a new job
+router.post('/', authenticateToken, async (req, res) => {
+  console.log(req,'ss');
   try {
-    const newJob = await Job.create(req.body);
+    const newJob = await Job.create({
+      ...req.body,
+      user_id: req.user.user_id,  // Associating the job with the logged-in user
+    });
     res.status(201).json(newJob);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// ✏️ PUT: Update a job by ID
-router.put('/:id', async (req, res) => {
+// ✏️ Update a job (only if it belongs to the user)
+router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const job = await Job.findByPk(req.params.id);
-    if (!job) return res.status(404).json({ error: 'Job not found' });
+    const job = await Job.findOne({ where: { id: req.params.id, user_id: req.user.user_id } });
+    if (!job) return res.status(404).json({ error: 'Job not found or unauthorized' });
 
     await job.update(req.body);
     res.json(job);
@@ -148,11 +50,11 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// ❌ DELETE: Delete job by ID
-router.delete('/:id', async (req, res) => {
+// ❌ Delete a job (only if it belongs to the user)
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const job = await Job.findByPk(req.params.id);
-    if (!job) return res.status(404).json({ error: 'Job not found' });
+    const job = await Job.findOne({ where: { id: req.params.id, user_id: req.user.user_id } });
+    if (!job) return res.status(404).json({ error: 'Job not found or unauthorized' });
 
     await job.destroy();
     res.json({ message: 'Job deleted successfully' });
@@ -162,8 +64,3 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
-
-
-
-
-

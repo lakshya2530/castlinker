@@ -1,30 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db/connection');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const db = require('../models');        // ✅ Import db
+const User = db.User;                   // ✅ Access User from db
 
-// GET all users
-router.get('/', async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM users');
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
+    const { email, password } = req.body;
 
-// POST new user
-router.post('/', async (req, res) => {
-  const { name, email } = req.body;
-  try {
-    const result = await pool.query(
-      'INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *',
-      [name, email]
-    );
-    res.status(201).json(result.rows[0]);
+    const existingUser = await User.findOne({ where: { email } });  // ✅ This line works now
+
+    if (existingUser) return res.status(409).json({ error: 'User already exists' });
+
+    const hashed = await bcrypt.hash(password, 10);
+    const newUser = await User.create({ email, password: hashed });
+
+    const token = jwt.sign({ id: newUser.id }, 'your_secret_key', { expiresIn: '7d' });
+
+    res.status(201).json({ user: { id: newUser.id, email: newUser.email }, token });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 

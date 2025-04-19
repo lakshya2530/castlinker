@@ -19,7 +19,11 @@ module.exports = (sequelize, DataTypes) => {
     application_url: DataTypes.TEXT,
     application_email: DataTypes.TEXT,
     is_featured: { type: DataTypes.BOOLEAN, defaultValue: false },
-    status: { type: DataTypes.STRING, defaultValue: "pending" }
+    status: { type: DataTypes.STRING, defaultValue: "pending" },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    }
   }, {
     tableName: 'jobs',
     timestamps: true,

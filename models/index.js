@@ -24,5 +24,6 @@ db.Sequelize = Sequelize;
 
 // Load Models
 db.Job = require('./job')(sequelize, DataTypes);
+db.User = require('./user')(sequelize, DataTypes);
 
 module.exports = db;

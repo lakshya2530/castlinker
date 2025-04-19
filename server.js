@@ -24,24 +24,41 @@
 // });
 
 
-const express = require('express');
-const dotenv = require('dotenv');
-dotenv.config();
+// const express = require('express');
+// const dotenv = require('dotenv');
+// dotenv.config();
 
+// const app = express();
+// const PORT = process.env.PORT || 3000;
+
+// app.use(express.json());
+
+// // Routes
+// const jobRoutes = require('./routes/jobs');
+// app.use('/api/jobs', jobRoutes);
+
+// // Sequelize sync
+// const db = require('./models');
+// db.sequelize.sync().then(() => {
+//   app.listen(PORT, () => {
+//     console.log(`🚀 Server running at http://localhost:${PORT}`);
+//   });
+// });
+
+
+const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 3000;
+require('dotenv').config();
 
 app.use(express.json());
 
 // Routes
+const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
+
+app.use('/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 
-// Sequelize sync
-const db = require('./models');
-db.sequelize.sync().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-  });
-});
+app.listen(3000, () => console.log('Server running on port 3000'));
+
 
