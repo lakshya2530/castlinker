@@ -55,9 +55,11 @@ app.use(express.json());
 // Routes
 const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
+const projectRoutes = require('./routes/projectRoutes');
 
 app.use('/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/projects', projectRoutes);
 
 app.listen(3000, () => console.log('Server running on port 3000'));
 
