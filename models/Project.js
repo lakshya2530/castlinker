@@ -1,4 +1,3 @@
-// models/Project.js
 module.exports = (sequelize, DataTypes) => {
     const Project = sequelize.define('Project', {
       name: {
@@ -15,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+    }, {
+      tableName: 'projects', // 🔥 Explicit lowercase table name
+      timestamps: true       // 👍 Ensures Sequelize knows to use createdAt / updatedAt
     });
   
     Project.associate = models => {
