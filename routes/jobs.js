@@ -6,9 +6,9 @@ const authenticateToken = require('../middleware/auth');
 const router = express.Router();
 
 // 🔍 GET jobs for logged-in user
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   const { title, location, type, tags } = req.query;
-  const where = { user_id: req.user.user_id }; // Only fetch jobs for the logged-in user
+  const where = { user_id: 3}; // Only fetch jobs for the logged-in user
 
   if (title) where.job_title = { [Op.iLike]: `%${title}%` };
   if (location) where.location = { [Op.iLike]: `%${location}%` };
@@ -24,18 +24,22 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // 🆕 Create a new job
-router.post('/', authenticateToken, async (req, res) => {
-  console.log(req,'ss');
+router.post("/", async (req, res) => {
+  console.log("📥 Incoming body:", req.body);
+
   try {
     const newJob = await Job.create({
       ...req.body,
-      user_id: req.user.user_id,  // Associating the job with the logged-in user
     });
+
+    console.log("✅ New job created:", newJob);
     res.status(201).json(newJob);
   } catch (err) {
+    console.error("❌ Error creating job:", err);
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // ✏️ Update a job (only if it belongs to the user)
 router.put('/:id', authenticateToken, async (req, res) => {

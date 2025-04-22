@@ -1,5 +1,5 @@
-const { Pool } = require('pg');
-require('dotenv').config();
+const { Pool } = require("pg");
+require("dotenv").config();
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -10,3 +10,19 @@ const pool = new Pool({
 });
 
 module.exports = pool;
+
+// const { Pool } = require("pg");
+// require("dotenv").config();
+
+// const pool = new Pool({
+//   host: "localhost",
+//   user: "postgres",
+//   port: "5433",
+//   password: String("root123"),
+//   database: "castlinker",
+// });
+// pool
+//   .connect()
+//   .then(() => console.log("✅ PostgreSQL database connected successfully!"))
+//   .catch((err) => console.error("❌ Failed to connect to the database:", err));
+// module.exports = pool;
