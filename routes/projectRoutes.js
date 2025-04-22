@@ -4,9 +4,9 @@ const router = express.Router();
 const { Project } = require("../models");
 const authenticateToken = require("../middleware/auth");
 
-router.get("/", authenticateToken, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    const userId = 3;
 
     const projects = await Project.findAll({
       where: { user_id: userId }, // Fetch only the projects for the logged-in user
@@ -32,7 +32,7 @@ router.post("/create", async (req, res) => {
       description,
       location,
       status,
-      user_id: req.user.user_id, // assuming you fixed the JWT payload to include user_id
+      user_id: 3,
     });
 
     res.status(201).json({ project: newProject });

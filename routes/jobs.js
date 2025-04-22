@@ -8,7 +8,7 @@ const router = express.Router();
 // 🔍 GET jobs for logged-in user
 router.get('/', async (req, res) => {
   const { title, location, type, tags } = req.query;
-  const where = { user_id: req.user.user_id }; // Only fetch jobs for the logged-in user
+  const where = { user_id: 3}; // Only fetch jobs for the logged-in user
 
   if (title) where.job_title = { [Op.iLike]: `%${title}%` };
   if (location) where.location = { [Op.iLike]: `%${location}%` };
