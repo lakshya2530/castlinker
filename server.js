@@ -67,6 +67,8 @@
 
 
 const express = require('express');
+const cors = require('cors'); // Import cors package
+
 const app = express();
 require('dotenv').config();
 
@@ -77,10 +79,14 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
 const projectRoutes = require('./routes/projectRoutes');
+const articleRoutes = require('./routes/articles');
+const eventRoutes = require('./routes/events');
 
 app.use('/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/articles', articleRoutes);
+app.use('/api/events', eventRoutes);
 
 app.listen(3000, () => console.log('Server running on port 3000'));
 
