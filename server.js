@@ -20,9 +20,8 @@
 // // app.use('/api/users', userRoutes);
 
 // app.listen(PORT, () => {
-//   console.log(`Server running on http://localhost:${PORT}`);
+//   console.log(Server running on http://localhost:${PORT});
 // });
-
 
 // const express = require('express');
 // const dotenv = require('dotenv');
@@ -41,26 +40,25 @@
 // const db = require('./models');
 // db.sequelize.sync().then(() => {
 //   app.listen(PORT, () => {
-//     console.log(`🚀 Server running at http://localhost:${PORT}`);
+//     console.log(🚀 Server running at http://localhost:${PORT});
 //   });
 // });
 
-
-const express = require('express');
+const express = require("express");
 const app = express();
-require('dotenv').config();
+const cors = require("cors");
+require("dotenv").config();
 
+app.use(cors());
 app.use(express.json());
 
 // Routes
-const authRoutes = require('./routes/auth');
-const jobRoutes = require('./routes/jobs');
-const projectRoutes = require('./routes/projectRoutes');
+const authRoutes = require("./routes/auth");
+const jobRoutes = require("./routes/jobs");
+const projectRoutes = require("./routes/projectRoutes");
 
-app.use('/auth', authRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/projects', projectRoutes);
+app.use("/auth", authRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/projects", projectRoutes);
 
-app.listen(3000, () => console.log('Server running on port 3000'));
-
-
+app.listen(3000, () => console.log("Server running on port 3000"));

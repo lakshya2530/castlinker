@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     is_featured: { type: DataTypes.BOOLEAN, defaultValue: false },
     status: { type: DataTypes.STRING, defaultValue: "pending" },
     user_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
     }
   }, {
