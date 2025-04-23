@@ -32,5 +32,7 @@ db.Event = require('./Event')(sequelize, DataTypes);
 db.Course = require('./course')(sequelize, DataTypes);
 db.Resource = require('./Resource')(sequelize, DataTypes);
 db.Like = require('./Like')(sequelize, DataTypes);
+db.Application = require('./Application')(sequelize, DataTypes);
+db.SavedJob = require('./SavedJob')(sequelize, DataTypes);
 
 module.exports = db;
