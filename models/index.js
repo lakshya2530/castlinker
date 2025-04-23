@@ -29,6 +29,7 @@ db.Project = require('./Project')(sequelize, DataTypes);
 db.Post = require('./Post')(sequelize, DataTypes);
 db.Article = require('./Articles')(sequelize, DataTypes);
 db.Event = require('./Event')(sequelize, DataTypes);
-db.Course = require('./Course')(sequelize, DataTypes);
+db.Course = require('./course')(sequelize, DataTypes);
+db.Resource = require('./Resource')(sequelize, DataTypes);
 
 module.exports = db;
