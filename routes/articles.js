@@ -23,7 +23,7 @@ router.post('/create', async (req, res) => {
       success: true,
       message: 'Article created successfully',
       data: newArticle
-    });
+    }); 
   } catch (error) {
     console.error(error);
     res.status(500).json({

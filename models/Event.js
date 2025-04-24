@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       date: {
         type: DataTypes.DATEONLY,
         allowNull: false
-      },
+      },  
       time: {
         type: DataTypes.TIME,
         allowNull: false
