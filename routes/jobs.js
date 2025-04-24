@@ -7,14 +7,65 @@ const authenticateToken = require('../middleware/auth');
 const router = express.Router();
 
 // 🔍 GET jobs for logged-in user
-router.get('/', async (req, res) => {
-  const { title, location, type, tags } = req.query;
-  const where = { user_id: 3}; // Only fetch jobs for the logged-in user
+// router.get('/', async (req, res) => {
+//   const { title, location, type, tags } = req.query;
+//   const where = { user_id: 3}; // Only fetch jobs for the logged-in user
 
-  if (title) where.job_title = { [Op.iLike]: `%${title}%` };
-  if (location) where.location = { [Op.iLike]: `%${location}%` };
-  if (type) where.job_type = type;
-  if (tags) where.tags = { [Op.contains]: [tags] };
+//   if (title) where.job_title = { [Op.iLike]: `%${title}%` };
+//   if (location) where.location = { [Op.iLike]: `%${location}%` };
+//   if (type) where.job_type = type;
+//   if (tags) where.tags = { [Op.contains]: [tags] };
+
+//   try {
+//     const jobs = await Job.findAll({ where });
+//     res.json(jobs);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+
+router.get('/', async (req, res) => {
+  const {
+    title,
+    location,
+    type,
+    roleCategory,
+    experienceLevel,
+    minPay,
+    maxPay
+  } = req.query;
+
+  const where = {};
+
+  if (title) {
+    where.job_title = { [Op.iLike]: `%${title}%` };
+  }
+
+  if (location) {
+    where.location = { [Op.iLike]: `%${location}%` };
+  }
+
+  if (type) {
+    const types = type.split(',');
+    where.job_type = { [Op.in]: types };
+  }
+
+  if (roleCategory) {
+    const categories = roleCategory.split(',');
+    where.role_category = { [Op.in]: categories };
+  }
+
+  if (experienceLevel) {
+    const levels = experienceLevel.split(',');
+    where.experience_level = { [Op.in]: levels };
+  }
+
+  if (minPay || maxPay) {
+    where.pay = {};
+    if (minPay) where.pay[Op.gte] = Number(minPay);
+    if (maxPay) where.pay[Op.lte] = Number(maxPay);
+  }
 
   try {
     const jobs = await Job.findAll({ where });
@@ -23,7 +74,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 // 🆕 Create a new job
 router.post("/", async (req, res) => {
   console.log("📥 Incoming body:", req.body);
