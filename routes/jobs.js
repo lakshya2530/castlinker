@@ -1,6 +1,7 @@
 // routes/jobs.js
 const express = require('express');
 const { Job } = require('../models');
+const { Application } = require('../models');
 const { Op } = require('sequelize');
 const authenticateToken = require('../middleware/auth');
 const router = express.Router();
@@ -66,5 +67,40 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+
+router.post('/submit', async (req, res) => {
+  try {
+    const { job_id, user_id, resume_url, cover_letter, additional_information } = req.body;
+
+    if (!job_id || !user_id || !cover_letter) {
+      return res.status(400).json({
+        success: false,
+        message: 'job_id, user_id, and cover_letter are required'
+      });
+    }
+
+    const application = await Application.create({
+      job_id,
+      user_id,
+      resume_url,
+      cover_letter,
+      additional_information
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Application submitted successfully',
+      data: application
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Error submitting application',
+      error: err.message
+    });
+  }
+});
+
 
 module.exports = router;

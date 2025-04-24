@@ -82,7 +82,9 @@ const projectRoutes = require('./routes/projectRoutes');
 const articleRoutes = require('./routes/articles');
 const eventRoutes = require('./routes/events');
 const courseRoutes = require('./routes/courses');
-const postsRoutes = require("./routes/posts");
+const resourceRoutes = require('./routes/resources');
+const likeRoutes = require('./routes/likes');
+const savedRoutes = require('./routes/savedJobs');
 
 
 app.use('/auth', authRoutes);
@@ -91,7 +93,10 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/courses', courseRoutes);
-app.use('/api/posts', postsRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use('/api/likes', likeRoutes);
+app.use('/api/jobs', savedRoutes);
+
 
 app.listen(3000, () => console.log('Server running on port 3000'));
 
