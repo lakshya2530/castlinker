@@ -7,8 +7,8 @@ const router = express.Router();
 
 // Register a new user
 router.post("/register", async (req, res) => {
-  const { username, email, password } = req.body;
-  console.log(username, email, password);
+    const { username, email, password, user_role, user_type } = req.body;
+    console.log(username, email, password);
   console.log("console 1");
 
   try {
@@ -22,6 +22,8 @@ router.post("/register", async (req, res) => {
       username,
       email,
       password: hashedPassword,
+      user_role,  // admin or user
+      user_type   // producer, actor, etc.
     });
     console.log("console 3");
 
