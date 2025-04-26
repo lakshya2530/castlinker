@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../models"); // ✅ Import db
-const User = db.User; // ✅ Access User from db
+const { User } = require('../models');
 
 router.post("/register", async (req, res) => {
   try {
@@ -25,6 +25,16 @@ router.post("/register", async (req, res) => {
       .json({ user: { id: newUser.id, email: newUser.email }, token });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/', async (req, res) => {
+  
+  try {
+    const users = await User.findAll();
+    res.json(users);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
