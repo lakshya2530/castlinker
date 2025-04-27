@@ -44,6 +44,7 @@
 //   });
 // });
 
+
 // const express = require('express');
 // const app = express();
 
@@ -79,7 +80,6 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
-
 app.use(cors());
 app.use(express.json());
 
@@ -145,28 +145,5 @@ app.use('/api/notifications', notificationRoutes);
 
 
 app.listen(3000, () => console.log('Server running on port 3000'));
-const authRoutes = require("./routes/auth");
-const jobRoutes = require("./routes/jobs");
-const projectRoutes = require("./routes/projectRoutes");
-const articleRoutes = require("./routes/articles");
-const eventRoutes = require("./routes/events");
-const courseRoutes = require("./routes/courses");
-const resourceRoutes = require("./routes/resources");
-const likeRoutes = require("./routes/likes");
-const savedRoutes = require("./routes/savedJobs");
-const postRoutes = require("./routes/posts");
-const dashboardRoutes = require("./routes/dashboard");
 
-app.use("/auth", authRoutes);
-app.use("/api/jobs", jobRoutes);
-app.use("/api/projects", projectRoutes);
-app.use("/api/articles", articleRoutes);
-app.use("/api/events", eventRoutes);
-app.use("/api/courses", courseRoutes);
-app.use("/api/resources", resourceRoutes);
-app.use("/api/likes", likeRoutes);
-app.use("/api/jobs", savedRoutes);
-app.use("/api/posts", postRoutes);
-app.use("/api/dashboard", dashboardRoutes);
 
-app.listen(3000, () => console.log("Server running on port 3000"));
