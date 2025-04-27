@@ -79,9 +79,6 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
-const express = require("express");
-const cors = require("cors"); // Import cors package
-
 
 app.use(cors());
 app.use(express.json());
