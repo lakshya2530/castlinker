@@ -34,5 +34,7 @@ db.Resource = require('./Resource')(sequelize, DataTypes);
 db.Like = require('./Like')(sequelize, DataTypes);
 db.Application = require('./Application')(sequelize, DataTypes);
 db.SavedJob = require('./SavedJob')(sequelize, DataTypes);
+db.Message = require('./message')(sequelize, DataTypes);
+db.Notification = require('./Notification')(sequelize, DataTypes);
 
 module.exports = db;
