@@ -1,9 +1,9 @@
 // routes/jobs.js
-const express = require('express');
-const { Job } = require('../models');
-const { Application } = require('../models');
-const { Op } = require('sequelize');
-const authenticateToken = require('../middleware/auth');
+const express = require("express");
+const { Job } = require("../models");
+const { Application } = require("../models");
+const { Op } = require("sequelize");
+const authenticateToken = require("../middleware/auth");
 const router = express.Router();
 
 // 🔍 GET jobs for logged-in user
@@ -24,16 +24,15 @@ const router = express.Router();
 //   }
 // });
 
-
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   const {
     title,
     location,
     type,
     roleCategory,
     experienceLevel,
-    minPay,
-    maxPay
+    min_salary,
+    max_salary,
   } = req.query;
 
   const where = {};
@@ -47,24 +46,27 @@ router.get('/', async (req, res) => {
   }
 
   if (type) {
-    const types = type.split(',');
+    const types = type.split(",");
     where.job_type = { [Op.in]: types };
   }
 
   if (roleCategory) {
-    const categories = roleCategory.split(',');
+    const categories = roleCategory.split(",");
     where.role_category = { [Op.in]: categories };
   }
 
   if (experienceLevel) {
-    const levels = experienceLevel.split(',');
+    const levels = experienceLevel.split(",");
     where.experience_level = { [Op.in]: levels };
   }
 
-  if (minPay || maxPay) {
-    where.pay = {};
-    if (minPay) where.pay[Op.gte] = Number(minPay);
-    if (maxPay) where.pay[Op.lte] = Number(maxPay);
+  if (min_salary) {
+    where.min_salary = {};
+    if (min_salary) where.min_salary[Op.gte] = Number(min_salary);
+  }
+  if (max_salary) {
+    where.max_salary = {};
+    if (max_salary) where.max_salary[Op.lte] = Number(max_salary);
   }
 
   try {
@@ -74,6 +76,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 // 🆕 Create a new job
 router.post("/", async (req, res) => {
   console.log("📥 Incoming body:", req.body);
@@ -91,12 +94,14 @@ router.post("/", async (req, res) => {
   }
 });
 
-
 // ✏️ Update a job (only if it belongs to the user)
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put("/:id", authenticateToken, async (req, res) => {
   try {
-    const job = await Job.findOne({ where: { id: req.params.id, user_id: req.user.user_id } });
-    if (!job) return res.status(404).json({ error: 'Job not found or unauthorized' });
+    const job = await Job.findOne({
+      where: { id: req.params.id, user_id: req.user.user_id },
+    });
+    if (!job)
+      return res.status(404).json({ error: "Job not found or unauthorized" });
 
     await job.update(req.body);
     res.json(job);
@@ -106,27 +111,35 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // ❌ Delete a job (only if it belongs to the user)
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete("/:id", authenticateToken, async (req, res) => {
   try {
-    const job = await Job.findOne({ where: { id: req.params.id, user_id: req.user.user_id } });
-    if (!job) return res.status(404).json({ error: 'Job not found or unauthorized' });
+    const job = await Job.findOne({
+      where: { id: req.params.id, user_id: req.user.user_id },
+    });
+    if (!job)
+      return res.status(404).json({ error: "Job not found or unauthorized" });
 
     await job.destroy();
-    res.json({ message: 'Job deleted successfully' });
+    res.json({ message: "Job deleted successfully" });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-
-router.post('/submit', async (req, res) => {
+router.post("/submit", async (req, res) => {
   try {
-    const { job_id, user_id, resume_url, cover_letter, additional_information } = req.body;
+    const {
+      job_id,
+      user_id,
+      resume_url,
+      cover_letter,
+      additional_information,
+    } = req.body;
 
     if (!job_id || !user_id || !cover_letter) {
       return res.status(400).json({
         success: false,
-        message: 'job_id, user_id, and cover_letter are required'
+        message: "job_id, user_id, and cover_letter are required",
       });
     }
 
@@ -135,22 +148,21 @@ router.post('/submit', async (req, res) => {
       user_id,
       resume_url,
       cover_letter,
-      additional_information
+      additional_information,
     });
 
     res.status(201).json({
       success: true,
-      message: 'Application submitted successfully',
-      data: application
+      message: "Application submitted successfully",
+      data: application,
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: 'Error submitting application',
-      error: err.message
+      message: "Error submitting application",
+      error: err.message,
     });
   }
 });
-
 
 module.exports = router;
