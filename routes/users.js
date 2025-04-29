@@ -39,4 +39,15 @@ router.get('/', async (req, res) => {
   }
 });
 
+app.get('/test-db', async (req, res) => {
+  try {
+      const result = await pool.query('SELECT NOW()');
+      res.send(`Database connected successfully at ${result.rows[0].now}`);
+  } catch (err) {
+      console.error('DB Connection Error:', err);
+      res.status(500).send('Database connection failed: ' + err.message);
+  }
+});
+
+
 module.exports = router;
