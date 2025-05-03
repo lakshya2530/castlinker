@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
 const router = express.Router();
+const authenticateToken = require("../middleware/auth");
 
 // // Register a new user
 // router.post("/register", async (req, res) => {
@@ -121,6 +122,7 @@ router.post("/login", async (req, res) => {
 
     // Exclude password from response
     const userData = { ...user.toJSON() };
+
     delete userData.password;
 
     res.json({ token, user: userData });
@@ -129,5 +131,19 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get('/profile', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.user_id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, data: user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+});
 
 module.exports = router;
