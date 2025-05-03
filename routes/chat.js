@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Message, User } = require('../models');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 
 // 📨 Inbox (last conversations)
 // router.get('/inbox/:userId', async (req, res) => {
@@ -118,23 +118,73 @@ router.get('/list/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
 
-    const messages = await Message.findAll({
+    const latestMessages = await Message.findAll({
       where: {
         [Op.or]: [
           { sender_id: user_id },
           { receiver_id: user_id }
         ]
       },
+      attributes: [
+        'id',
+        'sender_id',
+        'receiver_id',
+        'content',
+        'created_at',
+        [Sequelize.literal(`
+          CASE 
+            WHEN sender_id = ${user_id} THEN receiver_id
+            ELSE sender_id
+          END
+        `), 'conversation_with']
+      ],
       order: [['created_at', 'DESC']],
-      limit: 20 // Latest 20 messages
+      raw: true
     });
 
-    return res.json({ success: true, data: messages });
+    // Deduplicate by conversation_with
+    const seen = new Set();
+    const filtered = latestMessages.filter(msg => {
+      const key = msg.conversation_with;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    res.status(200).json({
+      success: true,
+      data: filtered
+    });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+      error: error.message
+    });
   }
 });
+// router.get('/list/:user_id', async (req, res) => {
+//   try {
+//     const { user_id } = req.params;
+
+//     const messages = await Message.findAll({
+//       where: {
+//         [Op.or]: [
+//           { sender_id: user_id },
+//           { receiver_id: user_id }
+//         ]
+//       },
+//       order: [['created_at', 'DESC']],
+//       limit: 20 // Latest 20 messages
+//     });
+
+//     return res.json({ success: true, data: messages });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+//   }
+// });
 
 module.exports = router;
 
