@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
       featured_image_url: {
         type: DataTypes.STRING,
         allowNull: true
+      },
+      user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
       }
     }, {
       timestamps: false, // Disable automatic createdAt and updatedAt fields

@@ -4,12 +4,111 @@ const router = express.Router();
 const { Project } = require("../models");
 const authenticateToken = require("../middleware/auth");
 
-router.get("/", async (req, res) => {
+// router.get("/", async (req, res) => {
+//   try {
+//     const userId = 3;
+
+//     const projects = await Project.findAll({
+//       where: { user_id: userId }, // Fetch only the projects for the logged-in user
+//     });
+
+//     res.status(200).json({ projects });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error fetching projects", error });
+//   }
+// });
+
+// router.post("/create", async (req, res) => {
+//   try {
+//     const { name, description, location, status } = req.body;
+
+//     if (!name) {
+//       return res.status(400).json({ message: "Project name is required" });
+//     }
+
+//     const newProject = await Project.create({
+//       name,
+//       description,
+//       location,
+//       status,
+//       user_id: 3,
+//     });
+
+//     res.status(201).json({ project: newProject });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error creating project", error });
+//   }
+// });
+
+// // routes/projectRoutes.js
+
+// router.put("/:id", authenticateToken, async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { name, description, location, status } = req.body;
+//     const userId = req.user.user_id;
+
+//     // Find the project by ID and user_id
+//     const project = await Project.findOne({ where: { id, user_id: userId } });
+
+//     if (!project) {
+//       return res.status(404).json({
+//         message:
+//           "Project not found or you do not have permission to edit this project",
+//       });
+//     }
+
+//     // Update project details
+//     project.name = name || project.name;
+//     project.description = description || project.description;
+//     project.location = location || project.location;
+//     project.status = status || project.status;
+
+//     await project.save(); // Save the updated project
+
+//     res.status(200).json({ project });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error updating project", error });
+//   }
+// });
+
+// // routes/projectRoutes.js
+
+// router.delete("/:id", authenticateToken, async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const userId = req.user.user_id;
+
+//     // Find the project by ID and user_id
+//     const project = await Project.findOne({ where: { id, user_id: userId } });
+
+//     if (!project) {
+//       return res.status(404).json({
+//         message:
+//           "Project not found or you do not have permission to delete this project",
+//       });
+//     }
+
+//     // Delete the project
+//     await project.destroy();
+
+//     res.status(200).json({ message: "Project deleted successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error deleting project", error });
+//   }
+// });
+
+
+router.get("/", authenticateToken, async (req, res) => {
   try {
-    const userId = 3;
+    const userId = req.user.user_id; // ✅ from token
 
     const projects = await Project.findAll({
-      where: { user_id: userId }, // Fetch only the projects for the logged-in user
+      where: { user_id: userId },
     });
 
     res.status(200).json({ projects });
@@ -19,9 +118,11 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/create", async (req, res) => {
+// ➕ Create a new project
+router.post("/create", authenticateToken, async (req, res) => {
   try {
     const { name, description, location, status } = req.body;
+    const userId = req.user.user_id; // ✅ from token
 
     if (!name) {
       return res.status(400).json({ message: "Project name is required" });
@@ -32,7 +133,7 @@ router.post("/create", async (req, res) => {
       description,
       location,
       status,
-      user_id: 3,
+      user_id: userId,
     });
 
     res.status(201).json({ project: newProject });
@@ -42,32 +143,28 @@ router.post("/create", async (req, res) => {
   }
 });
 
-// routes/projectRoutes.js
-
+// ✏️ Update project (only if owned by user)
 router.put("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, location, status } = req.body;
-    const userId = req.user.user_id;
+    const userId = req.user.user_id; // ✅ from token
 
-    // Find the project by ID and user_id
     const project = await Project.findOne({ where: { id, user_id: userId } });
 
     if (!project) {
       return res.status(404).json({
-        message:
-          "Project not found or you do not have permission to edit this project",
+        message: "Project not found or unauthorized",
       });
     }
 
-    // Update project details
+    // Update fields
     project.name = name || project.name;
     project.description = description || project.description;
     project.location = location || project.location;
     project.status = status || project.status;
 
-    await project.save(); // Save the updated project
-
+    await project.save();
     res.status(200).json({ project });
   } catch (error) {
     console.error(error);
@@ -75,26 +172,21 @@ router.put("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// routes/projectRoutes.js
-
+// ❌ Delete project (only if owned by user)
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.user_id;
+    const userId = req.user.user_id; // ✅ from token
 
-    // Find the project by ID and user_id
     const project = await Project.findOne({ where: { id, user_id: userId } });
 
     if (!project) {
       return res.status(404).json({
-        message:
-          "Project not found or you do not have permission to delete this project",
+        message: "Project not found or unauthorized",
       });
     }
 
-    // Delete the project
     await project.destroy();
-
     res.status(200).json({ message: "Project deleted successfully" });
   } catch (error) {
     console.error(error);
