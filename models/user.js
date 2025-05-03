@@ -14,7 +14,15 @@ module.exports = (sequelize, DataTypes) => {
       password: {
         type: DataTypes.STRING,
         allowNull: false
-      }
+      },
+      user_role: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      user_type: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      }      
     }, {
       tableName: 'users'  // 👈 forces Sequelize to use lowercase 'users'
     });
