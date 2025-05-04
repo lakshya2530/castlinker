@@ -5,7 +5,20 @@ const jwt = require("jsonwebtoken");
 const { User } = require("../models");
 const router = express.Router();
 const authenticateToken = require("../middleware/auth");
+const multer = require('multer');
 
+
+// Configure multer storage for profile image upload
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/profile_pics/');  // Directory where files will be stored
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));  // Use timestamp for unique filenames
+  }
+});
+
+const upload = multer({ storage: storage });
 // // Register a new user
 // router.post("/register", async (req, res) => {
 //     const { username, email, password, user_role, user_type } = req.body;
@@ -143,6 +156,57 @@ router.get('/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+});
+
+router.put('/update-profile', authenticateToken, upload.single('profileImage'), async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const {
+      bio, age_range, weight, height,
+      eye_color, hair_color, union_status,
+      languages, representation, special_skills
+    } = req.body;
+
+    // Default to null for profile image
+    let profileImageUrl = null;
+
+    // If a file is uploaded, store the file path
+    if (req.file) {
+      profileImageUrl = `uploads/profile_pics/${req.file.filename}`;  // Path to the uploaded image
+    }
+
+    // Find the user by user_id
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Update the user profile data
+    user.bio = bio ?? user.bio;
+    user.age_range = age_range ?? user.age_range;
+    user.weight = weight ?? user.weight;
+    user.height = height ?? user.height;
+    user.eye_color = eye_color ?? user.eye_color;
+    user.hair_color = hair_color ?? user.hair_color;
+    user.union_status = union_status ?? user.union_status;
+    user.languages = languages ?? user.languages;
+    user.representation = representation ?? user.representation;
+    user.special_skills = special_skills ?? user.special_skills;
+
+    // If a profile image was uploaded, update the user's profile image URL
+    if (profileImageUrl) {
+      user.profile_image = profileImageUrl;
+    }
+
+    // Save the updated user information to the database
+    await user.save();
+
+    // Return success response with updated user data
+    res.json({ success: true, message: 'Profile updated successfully', data: user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 });
 

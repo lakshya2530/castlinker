@@ -197,6 +197,8 @@ const userRoutes = require('./routes/users');
 const notificationRoutes = require('./routes/notifications');
 const chatRoutes = require('./routes/chat');
 const postRoutes = require('./routes/posts');
+const expRoutes = require('./routes/experience');
+
 
 app.use('/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
@@ -212,6 +214,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/experience', expRoutes);
 
 // Socket.io real-time logic
 io.on('connection', (socket) => {

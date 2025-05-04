@@ -51,5 +51,6 @@ db.Application = require('./Application')(sequelize, DataTypes);
 db.SavedJob = require('./SavedJob')(sequelize, DataTypes);
 db.Message = require('./message')(sequelize, DataTypes);
 db.Notification = require('./Notification')(sequelize, DataTypes);
+db.UserExperience = require('./UserExperience')(sequelize, DataTypes);
 
 module.exports = db;
