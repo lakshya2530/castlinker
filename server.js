@@ -147,30 +147,35 @@
 // app.listen(3000, () => console.log('Server running on port 3000'));
 
 
-
-
-
-
-
 const express = require('express');
-const cors = require('cors'); // Import cors package
+const cors = require('cors');
+const fs = require('fs');
+require('dotenv').config();
 const { Server } = require('socket.io');
-const http = require('http');
 
 const app = express();
 
-require('dotenv').config();
+let server;
+if (process.env.NODE_ENV === 'production') {
+  const https = require('https');
+  const options = {
+    key: fs.readFileSync('private-key.pem'),
+    cert: fs.readFileSync('certificate.pem'),
+  };
+  server = https.createServer(options, app);
+} else {
+  const http = require('http');
+  server = http.createServer(app);
+}
 
-// Create HTTP server from express app
-const server = http.createServer(app);
-
-// Initialize Socket.IO with the HTTP server
+// Initialize Socket.IO with the server
 const io = new Server(server, {
   cors: {
-    origin: '*', // allow all origins (for development)
-    methods: ['GET', 'POST']
-  }
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
 });
+
 
 // Middleware
 app.use(cors());
@@ -198,6 +203,7 @@ const notificationRoutes = require('./routes/notifications');
 const chatRoutes = require('./routes/chat');
 const postRoutes = require('./routes/posts');
 const expRoutes = require('./routes/experience');
+const portfolioRoutes = require('./routes/portfolio');
 
 
 app.use('/auth', authRoutes);
@@ -215,6 +221,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/experience', expRoutes);
+app.use('/api/portfolio', portfolioRoutes);
 
 // Socket.io real-time logic
 io.on('connection', (socket) => {

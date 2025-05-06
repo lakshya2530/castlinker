@@ -144,9 +144,9 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get('/profile', authenticateToken, async (req, res) => {
+router.get('/profile', async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.user_id);
+    const user = await User.findByPk(req.query.user_id);
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -165,7 +165,9 @@ router.put('/update-profile', authenticateToken, upload.single('profileImage'), 
     const {
       bio, age_range, weight, height,
       eye_color, hair_color, union_status,
-      languages, representation, special_skills
+      languages, representation, special_skills,acting_skills,
+      technical_skills,
+      physical_attributes 
     } = req.body;
 
     // Default to null for profile image
@@ -192,7 +194,12 @@ router.put('/update-profile', authenticateToken, upload.single('profileImage'), 
     user.union_status = union_status ?? user.union_status;
     user.languages = languages ?? user.languages;
     user.representation = representation ?? user.representation;
-    user.special_skills = special_skills ?? user.special_skills;
+    user.acting_skills = acting_skills ? JSON.stringify(acting_skills) : user.acting_skills;
+    user.technical_skills = technical_skills ? JSON.stringify(technical_skills) : user.technical_skills;
+    user.special_skills = special_skills ? JSON.stringify(special_skills) : user.special_skills;
+    user.physical_attributes = physical_attributes ? JSON.stringify(physical_attributes) : user.physical_attributes;
+
+ //   user.special_skills = special_skills ?? user.special_skills;
 
     // If a profile image was uploaded, update the user's profile image URL
     if (profileImageUrl) {
@@ -209,5 +216,7 @@ router.put('/update-profile', authenticateToken, upload.single('profileImage'), 
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 });
+
+
 
 module.exports = router;

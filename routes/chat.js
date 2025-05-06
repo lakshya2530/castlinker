@@ -114,11 +114,65 @@ router.get('/conversation/:user1_id/:user2_id', async (req, res) => {
 });
 
 // List recent chats for a user
+// router.get('/list/:user_id', async (req, res) => {
+//   try {
+//     const { user_id } = req.params;
+
+//     const latestMessages = await Message.findAll({
+//       where: {
+//         [Op.or]: [
+//           { sender_id: user_id },
+//           { receiver_id: user_id }
+//         ]
+//       },
+//       attributes: [
+//         'id',
+//         'sender_id',
+//         'receiver_id',
+//         'content',
+//         'created_at',
+//         [Sequelize.literal(`
+//           CASE 
+//             WHEN sender_id = ${user_id} THEN receiver_id
+//             ELSE sender_id
+//           END
+//         `), 'conversation_with']
+//       ],
+//       order: [['created_at', 'DESC']],
+//       raw: true
+//     });
+
+//     // Deduplicate by conversation_with
+//     const seen = new Set();
+//     const filtered = latestMessages.filter(msg => {
+//       const key = msg.conversation_with;
+//       if (seen.has(key)) return false;
+//       seen.add(key);
+//       return true;
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       data: filtered
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Server Error',
+//       error: error.message
+//     });
+//   }
+// });
+
+
+
 router.get('/list/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
 
-    const latestMessages = await Message.findAll({
+    // Fetch messages
+    const messages = await Message.findAll({
       where: {
         [Op.or]: [
           { sender_id: user_id },
@@ -144,17 +198,39 @@ router.get('/list/:user_id', async (req, res) => {
 
     // Deduplicate by conversation_with
     const seen = new Set();
-    const filtered = latestMessages.filter(msg => {
+    const filtered = [];
+    for (const msg of messages) {
       const key = msg.conversation_with;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
+      if (!seen.has(key)) {
+        seen.add(key);
+        filtered.push(msg);
+      }
+    }
+
+    // Fetch opposite user details
+    const userIds = filtered.map(m => m.conversation_with);
+    const users = await User.findAll({
+      where: { id: userIds },
+      attributes: ['id', 'username', 'profile_image'],
+      raw: true
     });
+
+    const userMap = {};
+    users.forEach(u => {
+      userMap[u.id] = u;
+    });
+
+    // Add user info to messages
+    const enriched = filtered.map(msg => ({
+      ...msg,
+      user: userMap[msg.conversation_with] || {}
+    }));
 
     res.status(200).json({
       success: true,
-      data: filtered
+      data: enriched
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -164,6 +240,7 @@ router.get('/list/:user_id', async (req, res) => {
     });
   }
 });
+
 // router.get('/list/:user_id', async (req, res) => {
 //   try {
 //     const { user_id } = req.params;

@@ -297,5 +297,32 @@ router.post("/submit", authenticateToken, async (req, res) => {
   }
 });
 
+router.get("/user-saved-jobs", authenticateToken, async (req, res) => {
+  try {
+    const savedJobs = await Application.findAll({
+      where: { user_id: req.user.user_id },
+      include: [
+        {
+          model: Job, // assuming you have a Job model related
+          attributes: ["id", "title", "company", "location", "salary"]
+        }
+      ],
+      order: [["createdAt", "DESC"]]
+    });
+
+    res.json({
+      success: true,
+      message: "Saved jobs fetched successfully",
+      data: savedJobs
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching saved jobs",
+      error: err.message
+    });
+  }
+});
+
 
 module.exports = router;

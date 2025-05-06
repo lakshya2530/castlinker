@@ -34,7 +34,20 @@ module.exports = (sequelize, DataTypes) => {
       union_status: DataTypes.STRING,
       languages: DataTypes.STRING,
       representation: DataTypes.STRING,
-      special_skills: DataTypes.TEXT
+      physical_attributes: {
+        type: DataTypes.JSONB
+      },
+      acting_skills: {
+        type: DataTypes.JSONB
+      },
+      technical_skills: {
+        type: DataTypes.JSONB
+      },
+      special_skills: {
+        type: DataTypes.JSONB
+      }
+  
+      //special_skills: DataTypes.TEXT
            
     }, {
       tableName: 'users'  // 👈 forces Sequelize to use lowercase 'users'
