@@ -134,6 +134,25 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+
+router.get('/admin', async (req, res) => {
+ // const userId = req.user.user_id;
+  const { title, category, tags, pincode, location } = req.query;
+  const where = {  }; // ✅ Only fetch current user's posts
+
+  if (title) where.title = { [Op.iLike]: `%${title}%` };
+  if (category) where.category = category;
+  if (tags) where.tags = { [Op.iLike]: `%${tags}%` };
+  if (pincode) where.pincode = pincode;
+  if (location) where.location = { [Op.iLike]: `%${location}%` };
+
+  try {
+    const posts = await Post.findAll({ where });
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // 👁️ View Single Post
 router.get('/:id', authenticateToken, async (req, res) => {
   try {

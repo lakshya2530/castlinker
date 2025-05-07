@@ -6,6 +6,8 @@ const { User } = require("../models");
 const router = express.Router();
 const authenticateToken = require("../middleware/auth");
 const multer = require('multer');
+const { Sequelize } = require('../models');  // adjust path if needed
+const crypto = require('crypto');
 
 
 // Configure multer storage for profile image upload
@@ -217,6 +219,143 @@ router.put('/update-profile', authenticateToken, upload.single('profileImage'), 
   }
 });
 
+router.post("/admin/register", async (req, res) => {
+  const { username, email, password, user_role, user_type, status, profile_pic_url, verified } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) return res.status(400).json({ message: "Email already in use" });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      user_role,
+      user_type,
+      status,
+      profile_pic_url,
+      verified
+    });
+
+    const userData = { ...user.toJSON() };
+    delete userData.password;
+
+    res.status(201).json({ message: "User created", user: userData });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 
+router.get("/admin/users", async (req, res) => {
+  const { search, role, status } = req.query;
+
+  const where = {};
+  if (search) {
+    where[Sequelize.Op.or] = [
+      { username: { [Sequelize.Op.iLike]: `%${search}%` } },
+      { email: { [Sequelize.Op.iLike]: `%${search}%` } }
+    ];
+  }
+  if (role) where.user_role = role;
+  if (status) where.status = status;
+
+  try {
+    const users = await User.findAll({ where, attributes: { exclude: ['password'] } });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+router.put("/admin/users/:id", async (req, res) => {
+  const { username, email, user_role, user_type, status, profile_pic_url, verified } = req.body;
+
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    await user.update({
+      username,
+      email,
+      user_role,
+      user_type,
+      status,
+      profile_pic_url,
+      verified
+    });
+
+    const userData = { ...user.toJSON() };
+    delete userData.password;
+
+    res.json({ message: "User updated", user: userData });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+router.delete("/admin/users/:id", async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    await user.destroy();
+
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+router.post('/admin/team/create', async (req, res) => {
+  const { name, email, role, generateRandomPassword } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    let password;
+    if (generateRandomPassword) {
+      password = crypto.randomBytes(8).toString('hex'); // generate 16-character random password
+    } else if (req.body.password) {
+      password = req.body.password;
+    } else {
+      return res.status(400).json({ message: 'Password is required' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      status: 'Active',         // you can adjust this field
+      verified: false           // default value if you use verification later
+    });
+
+    res.status(201).json({
+      message: 'Team member created successfully',
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        status: newUser.status
+      },
+      plainPassword: generateRandomPassword ? password : undefined
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
 module.exports = router;

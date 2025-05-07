@@ -206,6 +206,80 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
+router.get("/admin", async (req, res) => {
+  const {
+    title,
+    location,
+    type,
+    roleCategory,
+    experienceLevel,
+    min_salary,
+    max_salary,
+  } = req.query;
+
+  const where = {
+   // user_id: req.user.user_id,
+  };
+
+  if (title) {
+    where.job_title = { [Op.iLike]: `%${title}%` };
+  }
+
+  if (location) {
+    where.location = { [Op.iLike]: `%${location}%` };
+  }
+
+  if (type) {
+    const types = type.split(",");
+    where.job_type = { [Op.in]: types };
+  }
+
+  if (roleCategory) {
+    const categories = roleCategory.split(",");
+    where.role_category = { [Op.in]: categories };
+  }
+
+  if (experienceLevel) {
+    const levels = experienceLevel.split(",");
+    where.experience_level = { [Op.in]: levels };
+  }
+
+  if (min_salary) {
+    where.min_salary = { [Op.gte]: Number(min_salary) };
+  }
+
+  if (max_salary) {
+    where.max_salary = { [Op.lte]: Number(max_salary) };
+  }
+
+  try {
+    const jobs = await Job.findAll({ where });
+    res.json({ success: true, data: jobs });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.patch("/admin/:id/status", async (req, res) => {
+  const { status } = req.body;
+
+  if (!status) {
+    return res.status(400).json({ error: "Status is required" });
+  }
+
+  try {
+    const job = await Job.findByPk(req.params.id);
+
+    if (!job)
+      return res.status(404).json({ error: "Job not found" });
+
+    await job.update({ status });
+    res.json({ message: `Job status updated to ${status}`, job });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // 🆕 Create a new job
 router.post("/", authenticateToken, async (req, res) => {
   console.log("📥 Incoming body:", req.body);

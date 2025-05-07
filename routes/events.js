@@ -109,5 +109,24 @@ router.get('/list', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/list/admin', async (req, res) => {
+  try {
+    const events = await Event.findAll({
+      order: [['date', 'ASC']]
+    });
 
+    res.status(200).json({
+      success: true,
+      message: 'Events fetched successfully',
+      data: events
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while fetching the events',
+      error: error.message
+    });
+  }
+});
 module.exports = router;

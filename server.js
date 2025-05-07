@@ -204,6 +204,13 @@ const chatRoutes = require('./routes/chat');
 const postRoutes = require('./routes/posts');
 const expRoutes = require('./routes/experience');
 const portfolioRoutes = require('./routes/portfolio');
+const userAdminRoutes = require('./routes/auth');
+const userAdminDashboardRoutes = require('./routes/admin');
+
+//Admin
+app.use('/api', userAdminRoutes);
+app.use('/api/admin', userAdminDashboardRoutes);
+
 
 
 app.use('/auth', authRoutes);

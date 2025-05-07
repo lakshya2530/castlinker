@@ -17,14 +17,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       user_role: {
         type: DataTypes.STRING,
-        allowNull: false,
+       // allowNull: false,
       },
       user_type: {
         type: DataTypes.STRING,
-        allowNull: false,
+    //    allowNull: false,
       },username: {
         type: DataTypes.STRING,
-        allowNull: false,
+       // allowNull: false,
       },bio: DataTypes.TEXT,
       age_range: DataTypes.STRING,
       weight: DataTypes.STRING,
