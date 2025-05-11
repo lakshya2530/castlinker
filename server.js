@@ -211,8 +211,6 @@ const userAdminDashboardRoutes = require('./routes/admin');
 app.use('/api', userAdminRoutes);
 app.use('/api/admin', userAdminDashboardRoutes);
 
-
-
 app.use('/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/projects', projectRoutes);
