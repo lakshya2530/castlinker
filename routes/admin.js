@@ -66,7 +66,6 @@ router.get('/job-metrics', async (req, res) => {
       group: [Sequelize.fn('date_trunc', 'month', Sequelize.col('createdAt'))],
       order: [[Sequelize.literal('month'), 'ASC']],
     });
-
     const applications = await Application.findAll({
       attributes: [
         [Sequelize.fn('date_trunc', 'month', Sequelize.col('createdAt')), 'month'],

@@ -145,7 +145,6 @@ router.get('/admin', async (req, res) => {
   if (tags) where.tags = { [Op.iLike]: `%${tags}%` };
   if (pincode) where.pincode = pincode;
   if (location) where.location = { [Op.iLike]: `%${location}%` };
-
   try {
     const posts = await Post.findAll({ where });
     res.json(posts);
