@@ -109,6 +109,7 @@ router.get('/list', authenticateToken, async (req, res) => {
   }
 });
 
+
 router.get('/list/admin', async (req, res) => {
   try {
     const events = await Event.findAll({
