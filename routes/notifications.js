@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Notification } = require('../models'); 
+const { Notification, NotificationTemplate,User } = require('../models'); 
 const authenticateToken = require("../middleware/auth");
 
 
@@ -47,6 +47,86 @@ router.put('/read-all', authenticateToken, async (req, res) => {
 });
 
   
+router.post('/admin/template', async (req, res) => {
+    const { title, message, type, audience, status } = req.body;
+  
+    try {
+      const template = await NotificationTemplate.create({
+        title,
+        message,
+        type,
+        audience,
+        status
+      });
+  
+      // If status = Sent, send to all users immediately
+      if (status === 'Sent') {
+        const users = await User.findAll({ attributes: ['id'] });
+  
+        const bulkNotifications = users.map(user => ({
+          user_id: user.id,
+          type,
+          sender_id: null,
+          reference_id: template.id,
+          content: message,
+          is_read: false
+        }));
+  
+        await Notification.bulkCreate(bulkNotifications);
+      }
+  
+      res.status(201).json(template);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
 
+  router.get('/admin/template', async (req, res) => {
+    const { status } = req.query;
+    const where = {};
+    if (status) where.status = status;
+  
+    try {
+      const templates = await NotificationTemplate.findAll({ where });
+      res.json(templates);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
+
+  router.post('/admin/template/:id/send', async (req, res) => {
+    try {
+      const template = await NotificationTemplate.findByPk(req.params.id);
+      if (!template) return res.status(404).json({ error: 'Template not found' });
+  
+      // Only send if it’s in Draft
+      if (template.status === 'Sent') {
+        return res.status(400).json({ error: 'Already sent' });
+      }
+  
+      const users = await User.findAll({ attributes: ['id'] });
+  
+      const bulkNotifications = users.map(user => ({
+        user_id: user.id,
+        type: template.type,
+        sender_id: null,
+        reference_id: template.id,
+        content: template.message,
+        is_read: false
+      }));
+  
+      await Notification.bulkCreate(bulkNotifications);
+  
+      template.status = 'Sent';
+      await template.save();
+  
+      res.json({ message: 'Notification sent to all users.' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
 
   module.exports = router;
