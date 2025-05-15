@@ -130,4 +130,92 @@ router.get('/list/admin', async (req, res) => {
     });
   }
 });
+
+router.post('/create/admin', async (req, res) => {
+  try {
+    const { title, description, date, time, location, event_type, featured_image_url, event_status, expected_attribute } = req.body;
+
+    const newEvent = await Event.create({
+      title,
+      description,
+      date,
+      time,
+      location,
+      event_type,
+      featured_image_url,
+      event_status,
+      expected_attribute,
+      user_id: 0 // Optional: attach user_id from token
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Event created successfully',
+      data: newEvent
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while creating the event',
+      error: error.message
+    });
+  }
+});
+
+router.get('/admin/:id', async (req, res) => {
+  try {
+    const event = await Event.findByPk(req.params.id);
+    if (!event) {
+      return res.status(404).json({ success: false, message: 'Event not found' });
+    }
+    res.json({ success: true, data: event });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
+router.put('/admin/:id', async (req, res) => {
+  try {
+    const { title, description, date, time, location, event_type, featured_image_url, event_status, expected_attribute } = req.body;
+
+    const event = await Event.findByPk(req.params.id);
+    if (!event) {
+      return res.status(404).json({ success: false, message: 'Event not found' });
+    }
+
+    await event.update({
+      title,
+      description,
+      date,
+      time,
+      location,
+      event_type,
+      featured_image_url,
+      event_status,
+      expected_attribute
+    });
+
+    res.json({ success: true, message: 'Event updated successfully', data: event });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
+router.delete('/admin/:id', async (req, res) => {
+  try {
+    const event = await Event.findByPk(req.params.id);
+    if (!event) {
+      return res.status(404).json({ success: false, message: 'Event not found' });
+    }
+
+    await event.destroy();
+    res.json({ success: true, message: 'Event deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;

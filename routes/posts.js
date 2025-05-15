@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { Post } = require('../models');
+const { Post ,Application, Like} = require('../models');
 const upload = require('../middleware/upload'); // Multer setup
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const authenticateToken = require("../middleware/auth");
 
 // ✅ Create Post
@@ -135,23 +135,65 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 
+
 router.get('/admin', async (req, res) => {
- // const userId = req.user.user_id;
   const { title, category, tags, pincode, location } = req.query;
-  const where = {  }; // ✅ Only fetch current user's posts
+  const where = {};
 
   if (title) where.title = { [Op.iLike]: `%${title}%` };
   if (category) where.category = category;
   if (tags) where.tags = { [Op.iLike]: `%${tags}%` };
   if (pincode) where.pincode = pincode;
   if (location) where.location = { [Op.iLike]: `%${location}%` };
+
   try {
-    const posts = await Post.findAll({ where });
+    const posts = await Post.findAll({
+      where,
+      attributes: {
+        include: [
+          [
+            // Subquery for total applications
+            Sequelize.literal(`(
+              SELECT COUNT(*) FROM applications AS a
+              WHERE a.job_id = "Post"."id"
+            )`),
+            'total_applications'
+          ],
+          [
+            // Subquery for total likes
+            Sequelize.literal(`(
+              SELECT COUNT(*) FROM likes AS l
+              WHERE l.post_id = "Post"."id"
+            )`),
+            'total_likes'
+          ]
+        ]
+      }
+    });
+
     res.json(posts);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+// router.get('/admin', async (req, res) => {
+//  // const userId = req.user.user_id;
+//   const { title, category, tags, pincode, location } = req.query;
+//   const where = {  }; // ✅ Only fetch current user's posts
+
+//   if (title) where.title = { [Op.iLike]: `%${title}%` };
+//   if (category) where.category = category;
+//   if (tags) where.tags = { [Op.iLike]: `%${tags}%` };
+//   if (pincode) where.pincode = pincode;
+//   if (location) where.location = { [Op.iLike]: `%${location}%` };
+//   try {
+//     const posts = await Post.findAll({ where });
+//     res.json(posts);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 // 👁️ View Single Post
 router.get('/:id', authenticateToken, async (req, res) => {
   try {

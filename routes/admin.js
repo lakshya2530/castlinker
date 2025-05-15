@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { User, Job, Application, Event } = require('../models');
+const { User, Job, Application,Post, Event,Notification } = require('../models');
 const { Op, Sequelize } = require('sequelize');
 const authenticateAdmin = require('../middleware/auth'); // custom middleware to check admin
 
@@ -16,6 +16,7 @@ router.get('/stats', async (req, res) => {
         createdAt: { [Op.gte]: Sequelize.literal("NOW() - INTERVAL '30 days'") },
       },
     });
+    const eventsThisMonth =0;
     // const eventsThisMonth = await Event.count({
     //   where: Sequelize.where(
     //    // Sequelize.fn('date_part', 'month', Sequelize.col('scheduled_at')),
@@ -27,12 +28,63 @@ router.get('/stats', async (req, res) => {
       totalUsers,
       activeJobs,
       applicationsLast30Days,
-    //  eventsThisMonth,
+      eventsThisMonth,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+router.get('/stats/posts-category', async (req, res) => {
+  try {
+    const categories = await Post.findAll({
+      attributes: ['category', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
+      group: ['category']
+    });
+    const total = categories.reduce((sum, cat) => sum + parseInt(cat.dataValues.count), 0);
+
+    const result = categories.map(cat => ({
+      category: cat.category,
+      count: parseInt(cat.dataValues.count),
+      percentage: ((cat.dataValues.count / total) * 100).toFixed(2)
+    }));
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+router.get('/stats/team-summary', async (req, res) => {
+  try {
+    const roles = await User.findAll({
+      attributes: ['user_role', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
+      group: ['user_role']
+    });
+
+    res.json(roles.map(role => ({
+      role: role.user_role,
+      count: parseInt(role.dataValues.count)
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/stats/recent-activities', async (req, res) => {
+  try {
+    const activities = await Notification.findAll({
+      limit: 10,
+      order: [['createdAt', 'DESC']],
+    //  attributes: ['title', 'action', 'createdAt', 'performedBy']
+    });
+
+    res.json(activities);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 // GET /admin/user-activity → Daily active users over time
 router.get('/user-activity', async (req, res) => {

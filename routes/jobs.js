@@ -260,6 +260,57 @@ router.get("/admin", async (req, res) => {
   }
 });
 
+
+router.post("/admin", async (req, res) => {
+  console.log("📥 Incoming body:", req.body);
+
+  try {
+    const newJob = await Job.create({
+      ...req.body,
+      user_id: 0, // 👈 Set user_id from token
+    });
+
+    console.log("✅ New job created:", newJob);
+    res.status(201).json(newJob);
+  } catch (err) {
+    console.error("❌ Error creating job:", err);
+    res.status(400).json({ error: err.message });
+  }
+});
+// ✏️ Update a job (only if it belongs to the user)
+router.put("/admin/:id", async (req, res) => {
+  try {
+    const job = await Job.findOne({
+      where: { id: req.params.id },
+    });
+
+    if (!job)
+      return res.status(404).json({ error: "Job not found or unauthorized" });
+
+    await job.update(req.body);
+    res.json(job);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ❌ Delete a job (only if it belongs to the user)
+router.delete("/admin/:id", async (req, res) => {
+  try {
+    const job = await Job.findOne({
+      where: { id: req.params.id },
+    });
+
+    if (!job)
+      return res.status(404).json({ error: "Job not found or unauthorized" });
+
+    await job.destroy();
+    res.json({ message: "Job deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.patch("/admin/:id/status", async (req, res) => {
   const { status } = req.body;
 

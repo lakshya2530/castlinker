@@ -31,6 +31,14 @@ module.exports = (sequelize, DataTypes) => {
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false
+      },
+      event_status: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      expected_attribute: {
+        type: DataTypes.INTEGER,
+        allowNull: true
       }
     }, {
       timestamps: true,   // This will automatically add createdAt and updatedAt
