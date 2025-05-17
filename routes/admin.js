@@ -10,6 +10,8 @@ const authenticateAdmin = require('../middleware/auth'); // custom middleware to
 router.get('/stats', async (req, res) => {
   try {
     const totalUsers = await User.count();
+    const totalPost = await Post.count();
+
     const activeJobs = await Job.count({ where: { status: 'active' } });
     const applicationsLast30Days = await Application.count({
       where: {
@@ -29,6 +31,8 @@ router.get('/stats', async (req, res) => {
       activeJobs,
       applicationsLast30Days,
       eventsThisMonth,
+      totalPost,
+
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -83,6 +87,49 @@ router.get('/stats/recent-activities', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// GET /api/admin/user-demographics
+router.get('/stats/user-demographics', async (req, res) => {
+  try {
+    const users = await User.findAll({
+      attributes: [
+        'user_role',
+        [Sequelize.fn('COUNT', Sequelize.col('user_role')), 'count']
+      ],
+      group: ['user_role']
+    });
+
+    res.json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
+// GET /api/admin/job-categories
+router.get('/stats/job-categories', async (req, res) => {
+  try {
+    const jobs = await Job.findAll({
+      attributes: [
+        'role_category',
+        [Sequelize.fn('COUNT', Sequelize.col('role_category')), 'count']
+      ],
+      group: ['role_category']
+    });
+
+    res.json({
+      success: true,
+      data: jobs
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
 
 
 
