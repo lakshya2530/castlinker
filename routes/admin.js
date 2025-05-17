@@ -109,6 +109,71 @@ router.get('/stats/user-demographics', async (req, res) => {
 });
 
 
+router.get('/stats/user-activity-stats', async (req, res) => {
+  try {
+    const stats = await User.findAll({
+      attributes: [
+        [Sequelize.fn('DATE_TRUNC', 'month', Sequelize.col('createdAt')), 'month'],
+        [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT', Sequelize.col('id'))), 'activeUsers']
+      ],
+      group: [Sequelize.literal("DATE_TRUNC('month', \"createdAt\")")],
+      order: [[Sequelize.literal("month"), 'ASC']],
+      raw: true,
+    });
+
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+router.get('/stats/job-metrics', async (req, res) => {
+  try {
+    const jobStats = await Job.findAll({
+      attributes: [
+        [Sequelize.fn('DATE_TRUNC', 'month', Sequelize.col('created_at')), 'month'],
+        [Sequelize.fn('COUNT', '*'), 'posted']
+      ],
+      group: [Sequelize.literal("DATE_TRUNC('month', \"created_at\")")],
+      order: [[Sequelize.literal("month"), 'ASC']],
+      raw: true,
+    });
+
+    const applicationStats = await Application.findAll({
+      attributes: [
+        [Sequelize.fn('DATE_TRUNC', 'month', Sequelize.col('created_at')), 'month'],
+        [Sequelize.fn('COUNT', '*'), 'applications']
+      ],
+      group: [Sequelize.literal("DATE_TRUNC('month', \"created_at\")")],
+      order: [[Sequelize.literal("month"), 'ASC']],
+      raw: true,
+    });
+
+    // Merge both datasets by month
+    const mergedStats = {};
+
+    jobStats.forEach(({ month, posted }) => {
+      const key = new Date(month).toISOString().slice(0, 7);
+      mergedStats[key] = { month: key, posted: parseInt(posted), applications: 0 };
+    });
+
+    applicationStats.forEach(({ month, applications }) => {
+      const key = new Date(month).toISOString().slice(0, 7);
+      if (!mergedStats[key]) {
+        mergedStats[key] = { month: key, posted: 0, applications: parseInt(applications) };
+      } else {
+        mergedStats[key].applications = parseInt(applications);
+      }
+    });
+
+    const result = Object.values(mergedStats).sort((a, b) => new Date(a.month) - new Date(b.month));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/admin/job-categories
 router.get('/stats/job-categories', async (req, res) => {
   try {
