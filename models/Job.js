@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     status: { type: DataTypes.STRING, defaultValue: "pending" },
     user_id: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     }
   }, {
     tableName: 'jobs',

@@ -358,4 +358,72 @@ router.post('/admin/team/create', async (req, res) => {
     res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
+
+router.put('/admin/team/:id', async (req, res) => {
+  const { name, email, role, status, password } = req.body;
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Check if the new email is used by another user
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser && existingUser.id !== userId) {
+        return res.status(400).json({ message: 'Email is already in use by another user' });
+      }
+      user.email = email;
+    }
+
+    // Optional password update
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+    }
+
+    // Update other fields
+    user.name = name ?? user.name;
+    user.role = role ?? user.role;
+    user.status = status ?? user.status;
+
+    await user.save();
+
+    res.json({
+      message: 'Team member updated successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+
+
+// DELETE /admin/team/:id
+router.delete('/admin/team/:id', async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    await user.destroy();
+
+    res.json({ message: 'Team member deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+
 module.exports = router;
