@@ -270,6 +270,27 @@ router.get("/admin/users", async (req, res) => {
   }
 });
 
+router.delete("/admin/users", async (req, res) => {
+  try {
+    const idsParam = req.query.ids;
+
+    if (!idsParam) {
+      return res.status(400).json({ message: "No user IDs provided" });
+    }
+
+    const userIds = idsParam.split(",").map(id => parseInt(id.trim())).filter(Boolean);
+
+    const deletedCount = await User.destroy({
+      where: { id: userIds },
+    });
+
+    res.json({ message: `Deleted ${deletedCount} user(s)` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
 
 router.put("/admin/users/:id", async (req, res) => {
   const { username, email, user_role, user_type, status, profile_pic_url, verified } = req.body;
@@ -310,6 +331,40 @@ router.delete("/admin/users/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// PATCH /admin/users/:id/verify
+router.patch("/admin/users/:id/verify", async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.verified = true; // or user.isVerified = true depending on your schema
+    await user.save();
+
+    res.json({ message: "User verified successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.patch("/admin/users/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body; // e.g., "active", "inactive", etc.
+
+    const user = await User.findByPk(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.status = status;
+    await user.save();
+
+    res.json({ message: `User status updated to ${status}` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 
 router.post('/admin/team/create', async (req, res) => {

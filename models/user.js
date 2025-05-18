@@ -37,6 +37,11 @@ module.exports = (sequelize, DataTypes) => {
       physical_attributes: {
         type: DataTypes.JSONB
       },
+      status: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: "active",
+      },
       acting_skills: {
         type: DataTypes.JSONB
       },
@@ -45,7 +50,13 @@ module.exports = (sequelize, DataTypes) => {
       },
       special_skills: {
         type: DataTypes.JSONB
+      },
+      verified: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       }
+      
   
       //special_skills: DataTypes.TEXT
            
