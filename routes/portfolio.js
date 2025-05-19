@@ -85,7 +85,7 @@ router.get('/list', authenticateToken, async (req, res) => {
     const where = { user_id: userId };
     if (type && type !== 'all') where.type = type;
 
-    const items = await PortfolioItem.findAll({ where, order: [['created_at', 'DESC']] });
+    const items = await PortfolioItem.findAll({ where, order: [['createdAt', 'DESC']] });
 
     res.json({ success: true, data: items });
   } catch (err) {
