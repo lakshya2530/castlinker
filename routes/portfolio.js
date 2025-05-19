@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { Portfolio } = require('../models'); // Sequelize model or use raw query
+const { PortfolioItem } = require('../models'); // Sequelize model or use raw query
 const authenticateToken = require('../middleware/auth'); // your auth middleware
 
 // Multer setup
@@ -23,7 +23,7 @@ router.post('/add', authenticateToken, upload.single('file'), async (req, res) =
     const { type } = req.body;
     const filePath = `uploads/portfolio/${req.file.filename}`;
 
-    const newItem = await Portfolio.create({
+    const newItem = await PortfolioItem.create({
       user_id: userId,
       type,
       file_path: filePath,
@@ -43,7 +43,7 @@ router.put('/update/:id', authenticateToken, upload.single('file'), async (req, 
     const userId = req.user.user_id;
     const { type } = req.body;
 
-    const item = await Portfolio.findOne({ where: { id, user_id: userId } });
+    const item = await PortfolioItem.findOne({ where: { id, user_id: userId } });
     if (!item) return res.status(404).json({ success: false, message: 'Item not found' });
 
     const filePath = req.file ? `uploads/portfolio/${req.file.filename}` : item.file_path;
@@ -66,7 +66,7 @@ router.delete('/delete/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const userId = req.user.user_id;
 
-    const deleted = await Portfolio.destroy({ where: { id, user_id: userId } });
+    const deleted = await PortfolioItem.destroy({ where: { id, user_id: userId } });
     if (!deleted) return res.status(404).json({ success: false, message: 'Item not found' });
 
     res.json({ success: true, message: 'Portfolio item deleted' });
@@ -85,7 +85,7 @@ router.get('/list', authenticateToken, async (req, res) => {
     const where = { user_id: userId };
     if (type && type !== 'all') where.type = type;
 
-    const items = await Portfolio.findAll({ where, order: [['created_at', 'DESC']] });
+    const items = await PortfolioItem.findAll({ where, order: [['created_at', 'DESC']] });
 
     res.json({ success: true, data: items });
   } catch (err) {
