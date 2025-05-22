@@ -261,6 +261,46 @@ router.get("/admin", async (req, res) => {
 });
 
 
+router.patch('/admin/:id/approve', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; // 'approved' or 'rejected'
+
+  if (!['approved', 'rejected'].includes(status)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid status. Must be "approved" or "rejected".',
+    });
+  }
+
+  try {
+    const job = await Job.findByPk(id);
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found.',
+      });
+    }
+
+    job.status = status;
+    await job.save();
+
+    res.json({
+      success: true,
+      message: `Job has been ${status}.`,
+      data: job,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: err.message,
+    });
+  }
+});
+
+
+
 router.post("/admin", async (req, res) => {
   console.log("📥 Incoming body:", req.body);
 
