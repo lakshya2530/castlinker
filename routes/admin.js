@@ -7,37 +7,235 @@ const authenticateAdmin = require('../middleware/auth'); // custom middleware to
 //router.use(authenticateAdmin); // protect all routes with admin check
 
 // GET /admin/stats → Total Users, Active Jobs, Applications, Events
+// router.get('/stats', async (req, res) => {
+//   try {
+//     const now = new Date();
+//     const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+//     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+//     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+//     const totalUsers = await User.count();
+//     const usersLastMonth = await User.count({
+//       where: {
+//         createdAt: {
+//           [Op.between]: [startOfLastMonth, endOfLastMonth],
+//         },
+//       },
+//     });
+//     const totalPost = await Post.count();
+
+//     const activeJobs = await Job.count({ where: { status: 'active' } });
+//     const activeJobsLastMonth = await Job.count({
+//       where: {
+//         status: 'active',
+//         createdAt: {
+//           [Op.between]: [startOfLastMonth, endOfLastMonth],
+//         },
+//       },
+//     });
+//     // const applicationsLast30Days = await Application.count({
+//     //   where: {
+//     //     createdAt: { [Op.gte]: Sequelize.literal("NOW() - INTERVAL '30 days'") },
+//     //   },
+//     // });
+
+//     const applicationsLast30Days = await Application.count({
+//       where: {
+//         createdAt: {
+//           [Op.gte]: Sequelize.literal("NOW() - INTERVAL '30 days'"),
+//         },
+//       },
+//     });
+//     const applicationsPrevious30Days = await Application.count({
+//       where: {
+//         createdAt: {
+//           [Op.between]: [
+//             Sequelize.literal("NOW() - INTERVAL '60 days'"),
+//             Sequelize.literal("NOW() - INTERVAL '30 days'"),
+//           ],
+//         },
+//       },
+//     });
+//    // const eventsThisMonth =0;
+//     const eventsThisMonth = await Event.count({
+//       where: {
+//         createdAt: {
+//           [Op.gte]: startOfThisMonth,
+//         },
+//       },
+//     });
+//     const eventsLastMonth = await Event.count({
+//       where: {
+//         createdAt: {
+//           [Op.between]: [startOfLastMonth, endOfLastMonth],
+//         },
+//       },
+//     });
+//     const getPercentageChange = (current, previous) => {
+//       if (previous === 0) {
+//         return current > 0 ? 'New' : '0%';
+//       }
+    
+//       const change = ((current - previous) / previous) * 100;
+//       const rounded = Math.round(change);
+    
+//       return `${rounded > 0 ? '+' : ''}${rounded}%`; // adds '+' for positive numbers
+//     };
+    
+    
+//     // const eventsThisMonth = await Event.count({
+//     //   where: Sequelize.where(
+//     //    // Sequelize.fn('date_part', 'month', Sequelize.col('scheduled_at')),
+//     //     new Date().getMonth() + 1
+//     //   ),
+//     // });
+
+//     // res.json({
+//     //   totalUsers,
+//     //   activeJobs,
+//     //   applicationsLast30Days,
+//     //   eventsThisMonth,
+//     //   totalPost,
+
+//     // });
+
+//     console.log(totalUsers, usersLastMonth);
+
+//     res.json({
+//       totalUsers,
+//       usersChange: getPercentageChange(totalUsers, usersLastMonth),
+
+//       activeJobs,
+//       jobsChange: getPercentageChange(activeJobs, activeJobsLastMonth),
+
+//       applicationsLast30Days,
+//       applicationsChange: getPercentageChange(applicationsLast30Days, applicationsPrevious30Days),
+
+//       eventsThisMonth,
+//       eventsChange: getPercentageChange(eventsThisMonth, eventsLastMonth),
+
+//       totalPost,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 router.get('/stats', async (req, res) => {
   try {
+    const now = new Date();
+
+    // This month range
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Last month range
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Applications range
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+    // Total values
     const totalUsers = await User.count();
     const totalPost = await Post.count();
-
     const activeJobs = await Job.count({ where: { status: 'active' } });
-    const applicationsLast30Days = await Application.count({
+
+    // This month and last month data
+    const usersThisMonth = await User.count({
       where: {
-        createdAt: { [Op.gte]: Sequelize.literal("NOW() - INTERVAL '30 days'") },
+        createdAt: {
+          [Op.gte]: startOfThisMonth,
+        },
       },
     });
-    const eventsThisMonth =0;
-    // const eventsThisMonth = await Event.count({
-    //   where: Sequelize.where(
-    //    // Sequelize.fn('date_part', 'month', Sequelize.col('scheduled_at')),
-    //     new Date().getMonth() + 1
-    //   ),
-    // });
 
+    const usersLastMonth = await User.count({
+      where: {
+        createdAt: {
+          [Op.between]: [startOfLastMonth, endOfLastMonth],
+        },
+      },
+    });
+
+    const activeJobsLastMonth = await Job.count({
+      where: {
+        status: 'active',
+        createdAt: {
+          [Op.between]: [startOfLastMonth, endOfLastMonth],
+        },
+      },
+    });
+
+    const applicationsLast30Days = await Application.count({
+      where: {
+        createdAt: {
+          [Op.gte]: thirtyDaysAgo,
+        },
+      },
+    });
+
+    const applicationsPrevious30Days = await Application.count({
+      where: {
+        createdAt: {
+          [Op.between]: [sixtyDaysAgo, thirtyDaysAgo],
+        },
+      },
+    });
+
+    const eventsThisMonth = await Event.count({
+      where: {
+        createdAt: {
+          [Op.gte]: startOfThisMonth,
+        },
+      },
+    });
+
+    const eventsLastMonth = await Event.count({
+      where: {
+        createdAt: {
+          [Op.between]: [startOfLastMonth, endOfLastMonth],
+        },
+      },
+    });
+
+    // Utility: Percentage Change Function
+    const getPercentageChange = (current, previous) => {
+      if (previous === 0) {
+        return current > 0 ? 'New' : '0%';
+      }
+
+      const change = ((current - previous) / previous) * 100;
+      const rounded = Math.round(change);
+
+      return `${rounded > 0 ? '+' : ''}${rounded}%`;
+    };
+console.log(activeJobs, activeJobsLastMonth);
+    // Final Response
     res.json({
       totalUsers,
-      activeJobs,
-      applicationsLast30Days,
-      eventsThisMonth,
-      totalPost,
+      newUsersThisMonth: usersThisMonth,
+      usersChange: getPercentageChange(usersThisMonth, usersLastMonth),
 
+      activeJobs,
+      jobsChange: getPercentageChange(activeJobs, activeJobsLastMonth),
+
+      applicationsLast30Days,
+      applicationsChange: getPercentageChange(applicationsLast30Days, applicationsPrevious30Days),
+
+      eventsThisMonth,
+      eventsChange: getPercentageChange(eventsThisMonth, eventsLastMonth),
+
+      totalPost,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 router.get('/stats/posts-category', async (req, res) => {
   try {
