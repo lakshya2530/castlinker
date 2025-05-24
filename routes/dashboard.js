@@ -12,11 +12,11 @@ const { Op } = require('sequelize'); // Import Sequelize operators
 //const { Application, Connection, Like, Review, Job, Message, Event } = require('../models');
 const authMiddleware = require('../middleware/auth');
 
-router.get('/', async (req, res) => {
+router.get('/',authMiddleware, async (req, res) => {
     try {
         console.log(req);
       // const userId = req.user.user_id; // dynamically take logged in user id
-      const userId = 3; // dynamically take logged in user id
+      const userId = req.user.user_id;
       const applicationCount = await Application.count({ where: { user_id: userId } });
      // const connectionCount = await Connection.count({ where: { user_id: userId } });
       const likeCount = await Like.count({ where: { user_id: userId } });
