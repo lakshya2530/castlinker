@@ -25,7 +25,13 @@ router.get('/',authMiddleware, async (req, res) => {
     //     where: { user_id: userId },
     //   });
     const reviewRating =0;
-
+    const applicationApplied = await Application.findAll({
+     // limit: 3,
+      order: [['createdAt', 'DESC']], // Adjust if your timestamp field is different
+      where: {
+        user_id: userId, // Optional: filter jobs by user_id if needed
+      },
+    });
     const recentJobs = await Job.findAll({
         limit: 3,
         order: [['createdAt', 'DESC']], // Adjust if your timestamp field is different
@@ -54,7 +60,8 @@ router.get('/',authMiddleware, async (req, res) => {
           likes: likeCount,
           rating: Number(reviewRating?.dataValues?.averageRating || 0).toFixed(1),
           recentJobs: recentJobs,
-          upcomingEvents: upcomingEvents
+          upcomingEvents: upcomingEvents,
+          applicationApplied:applicationApplied
         }
       });
     } catch (err) {
