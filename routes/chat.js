@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { Message, User } = require('../models');
+// const { Message, User } = require('../models');
 const { Op, Sequelize } = require('sequelize');
+const authenticateToken = require("../middleware/auth");
+const { ChatRequest, Message,User } = require('../models');
 
 // 📨 Inbox (last conversations)
 // router.get('/inbox/:userId', async (req, res) => {
@@ -83,6 +85,46 @@ router.post('/send', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing fields' });
     }
 
+    const chatRequest = await ChatRequest.findOne({
+      where: {
+        sender_id: receiver_id,
+        receiver_id: sender_id,
+        status: 'accepted'
+      }
+    });
+
+    if (!chatRequest) {
+      // ✅ 2. Check if sender has already sent a pending request
+      const pendingRequest = await ChatRequest.findOne({
+        where: {
+          sender_id,
+          receiver_id
+        }
+      });
+
+      if (!pendingRequest) {
+        await ChatRequest.create({
+          sender_id,
+          receiver_id,
+          status: 'pending'
+        });
+
+        return res.status(200).json({
+          success: true,
+          is_first_time: true,
+          message: 'First-time chat request sent. Waiting for approval.',
+          requestSent: true
+        });
+      }
+
+      return res.status(403).json({
+        success: false,
+        is_first_time: true,
+        message: 'Chat request pending. Wait for receiver to accept.',
+        requestSent: true
+      });
+    }
+
     const newMessage = await Message.create({ sender_id, receiver_id, content });
     return res.json({ success: true, message: 'Message sent', data: newMessage });
   } catch (error) {
@@ -91,6 +133,49 @@ router.post('/send', async (req, res) => {
   }
 });
 
+
+router.post('/respond', authenticateToken, async (req, res) => {
+  try {
+    const { request_id, action } = req.body;
+
+    // ✅ Validate request input
+    if (!request_id || !['accept', 'reject'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid input. Must include request_id and action (accept/reject)'
+      });
+    }
+
+    // ✅ Get user ID from token
+    const receiverId = req.user.user_id;
+
+    // ✅ Find the request
+    const chatRequest = await ChatRequest.findByPk(request_id);
+
+    if (!chatRequest) {
+      return res.status(404).json({ success: false, message: 'Chat request not found' });
+    }
+
+    // ✅ Only receiver can respond
+    if (chatRequest.receiver_id !== receiverId) {
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+
+    // ✅ Update the status
+    chatRequest.status = action === 'accept' ? 'accepted' : 'rejected';
+    await chatRequest.save();
+
+    res.json({
+      success: true,
+      message: `Chat request ${action}ed successfully.`,
+      data: chatRequest
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+});
 // Get all messages between two users
 router.get('/conversation/:user1_id/:user2_id', async (req, res) => {
   try {

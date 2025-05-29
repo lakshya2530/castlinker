@@ -161,6 +161,22 @@ router.get('/profile', async (req, res) => {
   }
 });
 
+
+router.put('/update-social-links', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.user_id); // ID from JWT
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const { website, twitter, instagram, linkedin, youtube } = req.body;
+
+    await user.update({ website, twitter, instagram, linkedin, youtube });
+
+    res.json({ message: 'Social links updated', user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 router.put('/update-profile', authenticateToken, upload.single('profileImage'), async (req, res) => {
   try {
     const userId = req.user.user_id;

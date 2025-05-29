@@ -56,6 +56,27 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: false,
       },
+      website: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    twitter: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    instagram: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    linkedin: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    youtube: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
       profile_pic_url: {
         type: DataTypes.STRING,
         allowNull: true,
