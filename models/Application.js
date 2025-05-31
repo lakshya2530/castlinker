@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: false
       },
+      status: {
+        type: DataTypes.STRING,
+        defaultValue: 'applied', // other possible values: hired, rejected
+      },
       additional_information: {
         type: DataTypes.TEXT,
         allowNull: true

@@ -2,9 +2,11 @@
 const express = require("express");
 const { Job } = require("../models");
 const { Application } = require("../models");
+const { User } = require("../models");
 const { Op } = require("sequelize");
 const authenticateToken = require("../middleware/auth");
 const router = express.Router();
+const { sequelize } = require("../models"); // ✅ This line is required
 
 //router.use(authenticateToken);
 
@@ -484,6 +486,146 @@ router.get("/user-saved-jobs", authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching saved jobs",
+      error: err.message
+    });
+  }
+});
+
+
+router.get("/my-jobs-with-applicants", authenticateToken, async (req, res) => {
+  try {
+    const jobs = await Job.findAll({
+      where: { user_id: req.user.user_id }, // your user who posted the jobs
+      attributes: ["id", "job_title"],
+      // include: [
+      //   {
+      //     model: Application,
+      //     attributes: ["id", "user_id"],
+      //     include: [
+      //       {
+      //         model: User,
+      //         attributes: ["id", "name", "email"]
+      //       }
+      //     ]
+      //   }
+      // ],
+      order: [["createdAt", "DESC"]]
+    });
+
+    // Format response: flatten nested user data
+    const formatted = jobs.map(job => ({
+      job_id: job.id,
+      title: job.job_title,
+      // applications: job.Applications.map(app => ({
+      //   user_id: app.User.id,
+      //   name: app.User.name,
+      //   email: app.User.email
+      // }))
+    }));
+
+    res.json({
+      success: true,
+      message: "Jobs with applicants fetched successfully",
+      data: formatted
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching job applicants",
+      error: err.message
+    });
+  }
+});
+
+router.get("/job-applicants/:job_id", authenticateToken, async (req, res) => {
+  const { job_id } = req.params;
+
+  try {
+    const [results] = await sequelize.query(
+      `SELECT users.id AS user_id, users.username, users.email,applications.status
+       FROM applications
+       JOIN users ON applications.user_id = users.id
+       WHERE applications.job_id = :jobId
+       ORDER BY applications.created_at DESC`,
+      {
+        replacements: { jobId: job_id },
+        type: sequelize.QueryTypes.SELECT
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "Applicants fetched successfully",
+      data: results
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching applicants",
+      error: err.message
+    });
+  }
+});
+
+router.post("/hire", authenticateToken, async (req, res) => {
+  const { job_id, user_id } = req.body;
+
+  if (!job_id || !user_id) {
+    return res.status(400).json({
+      success: false,
+      message: "job_id and user_id are required"
+    });
+  }
+
+  try {
+    // Step 1: Check if the job belongs to the current user
+    const job = await Job.findOne({
+      where: {
+        id: job_id,
+        user_id: req.user.user_id // or job.owner_id, based on your schema
+      }
+    });
+
+    if (!job) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to hire for this job"
+      });
+    }
+
+    // Step 2: Check if the user applied to this job
+    const application = await Application.findOne({
+      where: {
+        job_id,
+        user_id
+      }
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "This user has not applied to the job"
+      });
+    }
+
+    // Step 3: Update application status to 'hired'
+    application.status = "hired";
+    await application.save();
+
+    res.json({
+      success: true,
+      message: "User has been successfully hired",
+      data: {
+        job_id,
+        user_id,
+        status: application.status
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Error hiring user",
       error: err.message
     });
   }
