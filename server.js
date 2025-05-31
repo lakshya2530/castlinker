@@ -206,6 +206,7 @@ const expRoutes = require('./routes/experience');
 const portfolioRoutes = require('./routes/portfolio');
 const userAdminRoutes = require('./routes/auth');
 const userAdminDashboardRoutes = require('./routes/admin');
+const paymentRoutes = require('./routes/payment');
 
 //Admin
 app.use('/api', userAdminRoutes);
@@ -227,6 +228,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/experience', expRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Socket.io real-time logic
 io.on('connection', (socket) => {

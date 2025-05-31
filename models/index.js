@@ -55,5 +55,7 @@ db.NotificationTemplate = require('./NotificationTemplate')(sequelize, DataTypes
 db.UserExperience = require('./UserExperience')(sequelize, DataTypes);
 db.PortfolioItem = require('./PortfolioItem')(sequelize, DataTypes);
 db.ChatRequest = require('./ChatRequest')(sequelize, DataTypes);
+db.Payment = require('./Payment')(sequelize, DataTypes);
+db.Transaction = require('./Transaction')(sequelize, DataTypes);
 
 module.exports = db;
