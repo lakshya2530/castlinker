@@ -97,4 +97,51 @@ router.post("/verify-payment", authenticateToken, async (req, res) => {
 //   }
 // });
 
+router.get("/active-plan", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    const activePlan = await Transaction.findOne({
+      where: {
+        user_id: userId,
+        payment_status: 'paid'
+      },
+      order: [['createdAt', 'DESC']]
+    });
+
+    if (!activePlan) {
+      return res.status(404).json({ message: "No active plan found" });
+    }
+
+    res.json({
+      success: true,
+      activePlan
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.get("/transactions", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    const transactions = await Transaction.findAll({
+      where: {
+        user_id: userId
+      },
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json({
+      success: true,
+      transactions
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
