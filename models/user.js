@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       languages: DataTypes.STRING,
       representation: DataTypes.STRING,
       physical_attributes: {
-        type: DataTypes.JSONB
+        type: DataTypes.JSON
       },
       status: {
         type: DataTypes.STRING,
@@ -43,13 +43,13 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: "active",
       },
       acting_skills: {
-        type: DataTypes.JSONB
+        type: DataTypes.JSON
       },
       technical_skills: {
-        type: DataTypes.JSONB
+        type: DataTypes.JSON
       },
       special_skills: {
-        type: DataTypes.JSONB
+        type: DataTypes.JSON
       },
       verified: {
         type: DataTypes.BOOLEAN,
