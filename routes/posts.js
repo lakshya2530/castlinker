@@ -118,7 +118,8 @@ router.put('/:id', authenticateToken, upload.single('media'), async (req, res) =
 router.get('/', authenticateToken, async (req, res) => {
   const userId = req.user.user_id;
   const { title, category, tags, pincode, location } = req.query;
-  const where = { user_id: userId }; // ✅ Only fetch current user's posts
+
+  const where = { user_id: userId };
 
   if (title) where.title = { [Op.iLike]: `%${title}%` };
   if (category) where.category = category;
@@ -127,12 +128,54 @@ router.get('/', authenticateToken, async (req, res) => {
   if (location) where.location = { [Op.iLike]: `%${location}%` };
 
   try {
-    const posts = await Post.findAll({ where });
+    const posts = await Post.findAll({
+      where,
+      attributes: {
+        include: [
+          [
+            // Total applications for this post
+            Sequelize.literal(`(
+              SELECT COUNT(*) FROM applications AS a
+              WHERE a.job_id = "Post"."id"
+            )`),
+            'total_applications'
+          ],
+          [
+            // Total likes for this post
+            Sequelize.literal(`(
+              SELECT COUNT(*) FROM likes AS l
+              WHERE l.post_id = "Post"."id"
+            )`),
+            'total_likes'
+          ]
+        ]
+      }
+    });
+
     res.json(posts);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+// router.get('/', authenticateToken, async (req, res) => {
+//   const userId = req.user.user_id;
+//   const { title, category, tags, pincode, location } = req.query;
+//   const where = { user_id: userId }; // ✅ Only fetch current user's posts
+
+//   if (title) where.title = { [Op.iLike]: `%${title}%` };
+//   if (category) where.category = category;
+//   if (tags) where.tags = { [Op.iLike]: `%${tags}%` };
+//   if (pincode) where.pincode = pincode;
+//   if (location) where.location = { [Op.iLike]: `%${location}%` };
+
+//   try {
+//     const posts = await Post.findAll({ where });
+//     res.json(posts);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 
 
