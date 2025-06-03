@@ -5,7 +5,8 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       plan_name: {
-        type: DataTypes.ENUM('monthly', 'quarterly', 'yearly'),
+        type: DataTypes.STRING,
+       // type: DataTypes.ENUM('monthly', 'quarterly', 'yearly'),
         allowNull: false,
       },
       amount: {
