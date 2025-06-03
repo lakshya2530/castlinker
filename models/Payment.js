@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       amount: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DECIMAL(10, 2), // for values like 29.99
         allowNull: false,
       },
       currency: {
