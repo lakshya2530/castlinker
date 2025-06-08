@@ -100,8 +100,9 @@ router.post('/send', async (req, res) => {
     //     ]
     //   }
     // });
+    let is_first_time = false;
 
-    if (!chatRequest) {
+    //if (!chatRequest) {
       // ✅ 2. Check if sender has already sent a pending request
       const pendingRequest = await ChatRequest.findOne({
         where: {
@@ -110,31 +111,42 @@ router.post('/send', async (req, res) => {
         }
       });
 
-      if (!pendingRequest) {
+      const existingRequest = await ChatRequest.findOne({
+        where: {
+          [Op.or]: [
+            { sender_id, receiver_id },
+            { sender_id: receiver_id, receiver_id: sender_id }
+          ]
+        }
+      });
+
+      if (!existingRequest) {
         await ChatRequest.create({
           sender_id,
           receiver_id,
           status: 'pending'
         });
+        is_first_time = true;
 
-        return res.status(200).json({
-          success: true,
-          is_first_time: true,
-          message: 'First-time chat request sent. Waiting for approval.',
-          requestSent: true
-        });
+        // return res.status(200).json({
+        //   success: true,
+        //   is_first_time: true,
+        //   message: 'First-time chat request sent. Waiting for approval.',
+        //   requestSent: true
+        // });
+        
       }
 
-      return res.status(403).json({
-        success: false,
-        is_first_time: true,
-        message: 'Chat request pending. Wait for receiver to accept.',
-        requestSent: true
-      });
-    }
+      // return res.status(403).json({
+      //   success: false,
+      //   is_first_time: true,
+      //   message: 'Chat request pending. Wait for receiver to accept.',
+      //   requestSent: true
+      // });
+    //}
 
     const newMessage = await Message.create({ sender_id, receiver_id, content });
-    return res.json({ success: true, message: 'Message sent', data: newMessage });
+    return res.json({ success: true, message: 'Message sent',is_first_time, data: newMessage });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: 'Server Error', error: error.message });
