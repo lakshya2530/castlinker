@@ -79,19 +79,27 @@ const { ChatRequest, Message,User } = require('../models');
 // Send a new message (store in DB)
 router.post('/send', async (req, res) => {
   try {
-    const { sender_id, receiver_id, content } = req.body;
+    const { sender_id, receiver_id, content,chatRequest } = req.body;
 
     if (!sender_id || !receiver_id || !content) {
       return res.status(400).json({ success: false, message: 'Missing fields' });
     }
 
-    const chatRequest = await ChatRequest.findOne({
-      where: {
-        sender_id: receiver_id,
-        receiver_id: sender_id,
-        status: 'accepted'
-      }
-    });
+    // const chatRequest = await ChatRequest.findOne({
+    //   where: {
+    //     sender_id: receiver_id,
+    //     receiver_id: sender_id,
+    //     status: 'accepted'
+    //   }
+    // });
+    // const chatRequest = await ChatRequest.findOne({
+    //   where: {
+    //     [Op.or]: [
+    //       { sender_id, receiver_id, status: 'accepted' },
+    //       { sender_id: receiver_id, receiver_id: sender_id, status: 'accepted' }
+    //     ]
+    //   }
+    // });
 
     if (!chatRequest) {
       // ✅ 2. Check if sender has already sent a pending request
