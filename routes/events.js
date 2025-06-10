@@ -69,7 +69,7 @@ router.post('/create', authenticateToken, async (req, res) => {
       location,
       event_type,
       featured_image_url,
-      user_id: req.user.id // Optional: attach user_id from token
+      user_id: req.user.user_id // Optional: attach user_id from token
     });
 
     res.status(201).json({

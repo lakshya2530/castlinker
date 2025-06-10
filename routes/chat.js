@@ -79,7 +79,7 @@ const { ChatRequest, Message,User } = require('../models');
 // Send a new message (store in DB)
 router.post('/send', async (req, res) => {
   try {
-    const { sender_id, receiver_id, content,chatRequest } = req.body;
+    const { sender_id, receiver_id, content } = req.body;
 
     if (!sender_id || !receiver_id || !content) {
       return res.status(400).json({ success: false, message: 'Missing fields' });
