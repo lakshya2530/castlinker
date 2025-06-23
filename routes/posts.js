@@ -147,7 +147,15 @@ router.get('/', authenticateToken, async (req, res) => {
               WHERE l.post_id = "Post"."id"
             )`),
             'total_likes'
-          ]
+          ],
+          [
+            Sequelize.literal(`EXISTS (
+              SELECT 1 FROM likes AS l
+              WHERE l.post_id = "Post"."id"
+              AND l.user_id = ${userId}
+            )`),
+            "is_liked",
+          ],
         ]
       }
     });

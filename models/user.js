@@ -81,8 +81,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: false,
+      },
+      cover_pic_url: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: false,
       }
-  
       //special_skills: DataTypes.TEXT
            
     }, {

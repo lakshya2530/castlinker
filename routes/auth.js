@@ -153,8 +153,18 @@ router.get('/profile', async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+    const userData = user.toJSON();
+    if (userData.special_skills) {
+      try {
+        userData.special_skills = JSON.parse(userData.special_skills);
+      } catch (e) {
+        // fallback if JSON parsing fails
+        userData.special_skills = [];
+      }
+    }
 
-    res.json({ success: true, data: user });
+
+    res.json({ success: true, data: userData });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
@@ -177,9 +187,13 @@ router.put('/update-social-links', authenticateToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-router.put('/update-profile', authenticateToken, upload.single('profileImage'), async (req, res) => {
+router.put('/update-profile', authenticateToken, upload.fields([
+  { name: 'profile_image', maxCount: 1 },
+  { name: 'cover_image', maxCount: 1 },
+]), async (req, res) => {
   try {
     const userId = req.user.user_id;
+    
     const {
       bio, age_range, weight, height,
       eye_color, hair_color, union_status,
@@ -187,14 +201,20 @@ router.put('/update-profile', authenticateToken, upload.single('profileImage'), 
       technical_skills,
       physical_attributes 
     } = req.body;
+    const profileImage = req.files?.profileImage?.[0];
+    const coverImage = req.files?.coverImage?.[0];
+    const profileImageUrl = profileImage
+    ? `uploads/profile_pics/${profileImage.filename}`
+    : null;
 
-    // Default to null for profile image
-    let profileImageUrl = null;
+  const coverImageUrl = coverImage
+    ? `uploads/profile_pics/${coverImage.filename}`
+    : null;
 
     // If a file is uploaded, store the file path
-    if (req.file) {
-      profileImageUrl = `uploads/profile_pics/${req.file.filename}`;  // Path to the uploaded image
-    }
+    // if (req.file) {
+    //   profileImageUrl = `uploads/profile_pics/${req.file.filename}`;  // Path to the uploaded image
+    // }
 
     // Find the user by user_id
     const user = await User.findByPk(userId);
@@ -219,16 +239,20 @@ router.put('/update-profile', authenticateToken, upload.single('profileImage'), 
 
 
     user.physical_attributes = physical_attributes ?? user.physical_attributes;
-user.acting_skills = acting_skills ?? user.acting_skills;
-user.technical_skills = technical_skills ?? user.technical_skills;
-user.special_skills = special_skills ?? user.special_skills;
+    user.acting_skills = acting_skills ?? user.acting_skills;
+    user.technical_skills = technical_skills ?? user.technical_skills;
+    user.special_skills = special_skills ?? user.special_skills;
 
  //   user.special_skills = special_skills ?? user.special_skills;
 
     // If a profile image was uploaded, update the user's profile image URL
-    if (profileImageUrl) {
-      user.profile_image = profileImageUrl;
-    }
+    // if (profileImageUrl) {
+    //   user.profile_image = profileImageUrl;
+    // }
+
+    if (profileImageUrl) user.profile_pic_url = profileImageUrl;
+    if (coverImageUrl) user.cover_pic_url = coverImageUrl;
+
 
     // Save the updated user information to the database
     await user.save();

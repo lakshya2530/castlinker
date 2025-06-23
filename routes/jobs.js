@@ -3,6 +3,7 @@ const express = require("express");
 const { Job } = require("../models");
 const { Application } = require("../models");
 const { User } = require("../models");
+const { Notification } = require("../models");
 const { Op } = require("sequelize");
 const authenticateToken = require("../middleware/auth");
 const router = express.Router();
@@ -449,6 +450,26 @@ router.post("/submit", authenticateToken, async (req, res) => {
       cover_letter,
       additional_information,
     });
+
+    const job = await Job.findByPk(job_id);
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found",
+      });
+    }
+
+    // 3. Create notification for job creator
+    await Notification.create({
+      user_id: job.user_id, // job creator is the recipient
+      sender_id: req.user.user_id, // the applicant
+      type: "job_application",
+      reference_id: application.id, // or job_id if preferred
+      content: `New application received for "${job.job_title}".`,
+    });
+
+
 
     res.status(201).json({
       success: true,
