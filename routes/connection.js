@@ -38,15 +38,45 @@ router.get('/', authenticateToken, async (req, res) => {
     const userId = req.user.user_id;
   
     try {
+      // Step 1: Get all connections for this user
       const connections = await Connection.findAll({
-        where: { user_id: userId },
-        include: [{ model: User, as: 'connectedUser', attributes: ['id', 'name', 'profile_pic_url'] }]
+        where: { user_id: userId }
       });
   
-      res.json({ success: true, data: connections });
+      // Step 2: Fetch user details for each connection manually
+      const enrichedConnections = await Promise.all(
+        connections.map(async (conn) => {
+          const user = await User.findByPk(conn.connected_user_id, {
+            attributes: ['id', 'name', 'profile_pic_url']
+          });
+  
+          return {
+            ...conn.toJSON(),
+            connected_user: user || null  // in case user was deleted
+          };
+        })
+      );
+  
+      res.json({ success: true, data: enrichedConnections });
     } catch (err) {
       res.status(500).json({ success: false, message: 'Error fetching connections', error: err.message });
     }
   });
+  
+
+// router.get('/', authenticateToken, async (req, res) => {
+//     const userId = req.user.user_id;
+  
+//     try {
+//       const connections = await Connection.findAll({
+//         where: { user_id: userId },
+//         include: [{ model: User, as: 'connectedUser', attributes: ['id', 'name', 'profile_pic_url'] }]
+//       });
+  
+//       res.json({ success: true, data: connections });
+//     } catch (err) {
+//       res.status(500).json({ success: false, message: 'Error fetching connections', error: err.message });
+//     }
+//   });
   
   module.exports = router;
