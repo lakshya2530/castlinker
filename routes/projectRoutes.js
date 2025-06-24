@@ -267,16 +267,16 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
 
   try {
     // Check team membership
-    const isMember = await ProjectTeam.findOne({
-      where: {
-        project_id,
-        team_member_id: user_id,
-      }
-    });
+    // const isMember = await ProjectTeam.findOne({
+    //   where: {
+    //     project_id,
+    //     team_member_id: user_id,
+    //   }
+    // });
 
-    if (!isMember) {
-      return res.status(403).json({ success: false, message: 'Access denied' });
-    }
+    // if (!isMember) {
+    //   return res.status(403).json({ success: false, message: 'Access denied' });
+    // }
 
     // Get all messages
     const rawMessages = await ProjectTeamChat.findAll({
