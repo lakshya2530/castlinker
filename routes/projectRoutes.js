@@ -318,7 +318,7 @@ router.post("/create-milestone", authenticateToken, async (req, res) => {
       user_id: userId,
     });
 
-    res.status(201).json({ project: newProject });
+    res.status(201).json({ newProject });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error creating project", error });
