@@ -1,4 +1,4 @@
-const { Connection } = require('../models');
+const { Connection,User } = require('../models');
 const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middleware/auth'); // Adjust path as needed
