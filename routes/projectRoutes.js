@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const { Project } = require("../models");
 const authenticateToken = require("../middleware/auth");
+const { ProjectTeam, Milestone, sequelize } = require('../models');
 
 // router.get("/", async (req, res) => {
 //   try {
@@ -194,4 +195,45 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   }
 });
 
+router.post("/create-milestone", authenticateToken, async (req, res) => {
+  try {
+    const { title, description, due_date,project_id } = req.body;
+    const userId = req.user.user_id; // ✅ from token
+
+
+    const newProject = await Milestone.create({
+      title,
+      project_id,
+      description,
+      due_date,
+      user_id: userId,
+    });
+
+    res.status(201).json({ project: newProject });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error creating project", error });
+  }
+});
+
+router.post("/add-project-member", authenticateToken, async (req, res) => {
+  try {
+    const { team_member_id, role,project_id } = req.body;
+    const userId = req.user.user_id; // ✅ from token
+
+
+    const newProject = await ProjectTeam.create({
+      title,
+      team_member_id,
+      role,
+      project_id,
+      user_id: userId,
+    });
+
+    res.status(201).json({ project: newProject });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error creating project", error });
+  }
+});
 module.exports = router;

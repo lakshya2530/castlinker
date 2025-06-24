@@ -57,5 +57,8 @@ db.PortfolioItem = require('./PortfolioItem')(sequelize, DataTypes);
 db.ChatRequest = require('./ChatRequest')(sequelize, DataTypes);
 db.Payment = require('./Payment')(sequelize, DataTypes);
 db.Transaction = require('./Transaction')(sequelize, DataTypes);
+db.Connection = require('./Connection')(sequelize, DataTypes);
+db.ProjectTeam = require('./ProjectTeam')(sequelize, DataTypes);
+db.Milestone = require('./Milestone')(sequelize, DataTypes);
 
 module.exports = db;

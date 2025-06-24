@@ -207,11 +207,13 @@ const portfolioRoutes = require('./routes/portfolio');
 const userAdminRoutes = require('./routes/auth');
 const userAdminDashboardRoutes = require('./routes/admin');
 const paymentRoutes = require('./routes/payment');
+const connectRoutes = require('./routes/connection');
 
 //Admin
 app.use('/api', userAdminRoutes);
 app.use('/api/admin', userAdminDashboardRoutes);
 
+app.use('/api/connection', connectRoutes);
 app.use('/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/projects', projectRoutes);
