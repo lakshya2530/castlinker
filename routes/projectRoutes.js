@@ -341,8 +341,12 @@ router.post("/add-project-member", authenticateToken, async (req, res) => {
 
     res.status(201).json({ project: newProject });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error creating project", error });
+    console.error("CREATE PROJECT TEAM ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error creating project",
+      error: error.message || error
+    });
   }
 });
 module.exports = router;
