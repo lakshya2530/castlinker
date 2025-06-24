@@ -287,7 +287,7 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
     // Manually fetch user info for each message
     const enrichedMessages = await Promise.all(rawMessages.map(async msg => {
       const user = await User.findByPk(msg.sender_id, {
-        attributes: ['id', 'user_name', 'profile_pic_url']
+        attributes: ['id', 'username', 'profile_pic_url']
       });
       return {
         id: msg.id,
