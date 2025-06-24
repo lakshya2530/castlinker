@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const { Project } = require("../models");
 const authenticateToken = require("../middleware/auth");
-const { ProjectTeam, Milestone, sequelize } = require('../models');
+const { ProjectTeam, Milestone,User,ProjectTeamChat, sequelize } = require('../models');
 
 // router.get("/", async (req, res) => {
 //   try {
@@ -119,6 +119,43 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
+router.get("/", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.user_id; // ✅ from token
+
+    const projects = await Project.findAll({
+      where: { user_id: userId },
+    });
+
+    res.status(200).json({ projects });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching projects", error });
+  }
+});
+router.get('/milestones/:project_id', async (req, res) => {
+  const { project_id } = req.params;
+
+  try {
+    const milestones = await Milestone.findAll({
+      where: { project_id },
+      order: [['due_date', 'ASC']],
+    });
+
+    res.json({
+      success: true,
+      data: milestones,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching milestones',
+      error: err.message,
+    });
+  }
+});
+
 // ➕ Create a new project
 router.post("/create", authenticateToken, async (req, res) => {
   try {
@@ -194,6 +231,78 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     res.status(500).json({ message: "Error deleting project", error });
   }
 });
+
+router.post('/:project_id/chat', authenticateToken, async (req, res) => {
+  const { project_id } = req.params;
+  const { message } = req.body;
+  const sender_id = req.user.user_id;
+
+  try {
+    // Check if user is in the project team
+    // const isMember = await ProjectTeam.findOne({
+    //   where: {
+    //     project_id,
+    //     team_member_id: sender_id,
+    //   }
+    // });
+
+    // if (!isMember) {
+    //   return res.status(403).json({ success: false, message: 'Access denied' });
+    // }
+
+    const chat = await ProjectTeamChat.create({
+      project_id,
+      sender_id,
+      message
+    });
+
+    res.json({ success: true, data: chat });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Message send failed', error: err.message });
+  }
+});
+router.get('/:project_id/chat', authenticateToken, async (req, res) => {
+  const { project_id } = req.params;
+  const user_id = req.user.user_id;
+
+  try {
+    // Check team membership
+    const isMember = await ProjectTeam.findOne({
+      where: {
+        project_id,
+        team_member_id: user_id,
+      }
+    });
+
+    if (!isMember) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
+    // Get all messages
+    const rawMessages = await ProjectTeamChat.findAll({
+      where: { project_id },
+      order: [['created_at', 'ASC']]
+    });
+
+    // Manually fetch user info for each message
+    const enrichedMessages = await Promise.all(rawMessages.map(async msg => {
+      const user = await User.findByPk(msg.sender_id, {
+        attributes: ['id', 'name', 'profile_image']
+      });
+      return {
+        id: msg.id,
+        message: msg.message,
+        created_at: msg.created_at,
+        sender: user  // manually attached
+      };
+    }));
+
+    res.json({ success: true, data: enrichedMessages });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to load chat', error: err.message });
+  }
+});
+
 
 router.post("/create-milestone", authenticateToken, async (req, res) => {
   try {
