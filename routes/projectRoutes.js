@@ -332,7 +332,6 @@ router.post("/add-project-member", authenticateToken, async (req, res) => {
 
 
     const newProject = await ProjectTeam.create({
-      title,
       team_member_id,
       role,
       project_id,
