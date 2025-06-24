@@ -1,10 +1,10 @@
 // models/ProjectTeam.js
 module.exports = (sequelize, DataTypes) => {
     const ProjectTeam = sequelize.define('ProjectTeam', {
-      title: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
+    //   title: {
+    //     type: DataTypes.STRING,
+    //     allowNull: true,
+    //   },
       team_member_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
