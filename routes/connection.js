@@ -1,4 +1,6 @@
 const { Connection } = require('../models');
+const express = require('express');
+const router = express.Router();
 
 router.post('/connect', authenticateToken, async (req, res) => {
   const userId = req.user.user_id;
