@@ -47,7 +47,7 @@ router.get('/', authenticateToken, async (req, res) => {
       const enrichedConnections = await Promise.all(
         connections.map(async (conn) => {
           const user = await User.findByPk(conn.connected_user_id, {
-            attributes: ['id', 'name', 'profile_pic_url']
+            attributes: ['id', 'username', 'profile_pic_url']
           });
   
           return {
