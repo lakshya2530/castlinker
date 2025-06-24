@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     const ProjectTeam = sequelize.define('ProjectTeam', {
       title: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       team_member_id: {
         type: DataTypes.INTEGER,
