@@ -1,6 +1,7 @@
 const { Connection } = require('../models');
 const express = require('express');
 const router = express.Router();
+const authenticateToken = require('../middleware/auth'); // Adjust path as needed
 
 router.post('/connect', authenticateToken, async (req, res) => {
   const userId = req.user.user_id;
