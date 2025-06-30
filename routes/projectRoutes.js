@@ -348,4 +348,40 @@ router.post("/add-project-member", authenticateToken, async (req, res) => {
     });
   }
 });
+
+router.get('/project-members/:project_id', authenticateToken, async (req, res) => {
+  const { project_id } = req.params;
+
+  try {
+    // Step 1: Get all team member entries for this project
+    const teamMembers = await ProjectTeam.findAll({
+      where: { project_id },
+      order: [['id', 'DESC']]
+    });
+
+    // Step 2: Fetch user details manually for each member
+    const membersWithUser = await Promise.all(
+      teamMembers.map(async (member) => {
+        const user = await User.findByPk(member.team_member_id, {
+          attributes: ['id', 'username', 'email', 'profile_pic_url']
+        });
+
+        return {
+          ...member.toJSON(),
+          user: user || null
+        };
+      })
+    );
+
+    res.json({ success: true, data: membersWithUser });
+  } catch (error) {
+    console.error("FETCH PROJECT MEMBERS ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching project members",
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
