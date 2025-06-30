@@ -8,6 +8,7 @@ const authenticateToken = require("../middleware/auth");
 const multer = require('multer');
 const { Sequelize } = require('../models');  // adjust path if needed
 const crypto = require('crypto');
+const path = require('path');
 
 
 // Configure multer storage for profile image upload
