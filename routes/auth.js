@@ -202,8 +202,8 @@ router.put('/update-profile', authenticateToken, upload.fields([
       technical_skills,
       physical_attributes 
     } = req.body;
-    const profileImage = req.files?.profileImage?.[0];
-    const coverImage = req.files?.coverImage?.[0];
+    const profileImage = req.files?.profile_image?.[0];
+    const coverImage = req.files?.cover_image?.[0];
     const profileImageUrl = profileImage
     ? `uploads/profile_pics/${profileImage.filename}`
     : null;
