@@ -79,9 +79,51 @@ const authenticateToken = require("../middleware/auth");
 //   }
 // });
 
+// router.post('/', authenticateToken, upload.single('media'), async (req, res) => {
+//   try {
+//     const userId = req.user.user_id;
+
+//     const post = await Post.create({
+//       ...req.body,
+//       media: req.file ? req.file.filename : null,
+//       user_id: userId
+//     });
+
+//     res.status(201).json(post);
+//   } catch (err) {
+//     res.status(400).json({ error: err.message });
+//   }
+// });
+
+// // ✏️ Update Post
+// router.put('/:id', authenticateToken, upload.single('media'), async (req, res) => {
+//   try {
+//     const userId = req.user.user_id;
+
+//     const post = await Post.findOne({ where: { id: req.params.id, user_id: userId } });
+//     if (!post) return res.status(404).json({ error: 'Post not found or unauthorized' });
+
+//     await post.update({
+//       ...req.body,
+//       media: req.file ? req.file.filename : post.media
+//     });
+
+//     res.json(post);
+//   } catch (err) {
+//     res.status(400).json({ error: err.message });
+//   }
+// });
+
 router.post('/', authenticateToken, upload.single('media'), async (req, res) => {
   try {
     const userId = req.user.user_id;
+    const { title } = req.body;
+
+    // Check for duplicate title for the same user
+    const existingPost = await Post.findOne({ where: { title, user_id: userId } });
+    if (existingPost) {
+      return res.status(400).json({ error: 'Post with this title already exists' });
+    }
 
     const post = await Post.create({
       ...req.body,
@@ -95,13 +137,26 @@ router.post('/', authenticateToken, upload.single('media'), async (req, res) => 
   }
 });
 
-// ✏️ Update Post
+
 router.put('/:id', authenticateToken, upload.single('media'), async (req, res) => {
   try {
     const userId = req.user.user_id;
+    const { title } = req.body;
 
     const post = await Post.findOne({ where: { id: req.params.id, user_id: userId } });
     if (!post) return res.status(404).json({ error: 'Post not found or unauthorized' });
+
+    // Check if the new title already exists on another post by the same user
+    const duplicate = await Post.findOne({
+      where: {
+        title,
+        user_id: userId,
+        id: { [Op.ne]: req.params.id } // exclude current post
+      }
+    });
+    if (duplicate) {
+      return res.status(400).json({ error: 'Another post with this title already exists' });
+    }
 
     await post.update({
       ...req.body,
@@ -113,6 +168,7 @@ router.put('/:id', authenticateToken, upload.single('media'), async (req, res) =
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // 🔍 List/Search Posts
 router.get('/', authenticateToken, async (req, res) => {
