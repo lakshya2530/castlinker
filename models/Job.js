@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     job_title: { type: DataTypes.STRING, allowNull: false },
     company: { type: DataTypes.STRING, allowNull: false },
     company_logo_url: DataTypes.TEXT,
+    experience_level: DataTypes.TEXT,
     job_type: { type: DataTypes.ENUM("Full-time", "Part-time", "Contract"), allowNull: false },
     role_category: { type: DataTypes.STRING, allowNull: false },
     location: { type: DataTypes.STRING, allowNull: false },
@@ -20,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     application_email: DataTypes.TEXT,
     is_featured: { type: DataTypes.BOOLEAN, defaultValue: false },
     status: { type: DataTypes.STRING, defaultValue: "pending" },
+
     user_id: {
       type: DataTypes.STRING,
       allowNull: true,
