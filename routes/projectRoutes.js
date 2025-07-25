@@ -266,7 +266,7 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
   const user_id = req.user.user_id;
 
   try {
-    // Check team membership
+    // Optional: Check team membership
     // const isMember = await ProjectTeam.findOne({
     //   where: {
     //     project_id,
@@ -278,33 +278,40 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
     //   return res.status(403).json({ success: false, message: 'Access denied' });
     // }
 
-    // Get all messages
+    // Fetch all chat messages for the project
     const rawMessages = await ProjectTeamChat.findAll({
       where: { project_id },
       order: [['created_at', 'ASC']]
     });
 
-    // Manually fetch user info for each message
+    // Format messages with user details and formatted timestamps
     const enrichedMessages = await Promise.all(rawMessages.map(async msg => {
       const user = await User.findByPk(msg.sender_id, {
         attributes: ['id', 'username', 'profile_pic_url']
       });
+
+      const createdAt = new Date(msg.created_at);
+      const formattedDate = isNaN(createdAt.getTime())
+        ? null
+        : createdAt.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+      const formattedTime = isNaN(createdAt.getTime())
+        ? null
+        : createdAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
       return {
         id: msg.id,
         message: msg.message,
         created_at: msg.created_at,
-        date: new Date(msg.created_at).toLocaleDateString('en-IN', {
-          day: '2-digit', month: '2-digit', year: 'numeric'
-        }),
-        time: new Date(msg.created_at).toLocaleTimeString('en-IN', {
-          hour: '2-digit', minute: '2-digit'
-        }),
-        sender: user  // manually attached
+        date: formattedDate,
+        time: formattedTime,
+        sender: user
       };
     }));
 
     res.json({ success: true, data: enrichedMessages });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: 'Failed to load chat', error: err.message });
   }
 });
