@@ -229,6 +229,13 @@ router.get('/', authenticateToken, async (req, res) => {
             )`),
             'total_likes'
           ],
+        [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM post_applications AS pa
+            WHERE pa.post_id = Post.id
+          )`), 'application_count'
+        ],
           [
             Sequelize.literal(`EXISTS (
               SELECT 1 FROM likes AS l
@@ -246,27 +253,6 @@ router.get('/', authenticateToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// router.get('/', authenticateToken, async (req, res) => {
-//   const userId = req.user.user_id;
-//   const { title, category, tags, pincode, location } = req.query;
-//   const where = { user_id: userId }; // ✅ Only fetch current user's posts
-
-//   if (title) where.title = { [Op.iLike]: `%${title}%` };
-//   if (category) where.category = category;
-//   if (tags) where.tags = { [Op.iLike]: `%${tags}%` };
-//   if (pincode) where.pincode = pincode;
-//   if (location) where.location = { [Op.iLike]: `%${location}%` };
-
-//   try {
-//     const posts = await Post.findAll({ where });
-//     res.json(posts);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-
 
 router.get('/admin', async (req, res) => {
   const { title, category, tags, pincode, location } = req.query;
@@ -291,6 +277,13 @@ router.get('/admin', async (req, res) => {
             )`),
             'total_applications'
           ],
+          [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM post_applications AS pa
+            WHERE pa.post_id = Post.id
+          )`), 'application_count'
+        ],
           [
             // Subquery for total likes
             Sequelize.literal(`(
