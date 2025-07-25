@@ -291,20 +291,24 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
       });
 
       const createdAt = msg.created_at ? new Date(msg.created_at) : null;
-      const formattedDate = isNaN(createdAt.getTime())
-        ? null
-        : createdAt.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-      const formattedTime = isNaN(createdAt.getTime())
-        ? null
-        : createdAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-
+      
       return {
         id: msg.id,
         message: msg.message,
         created_at: msg.created_at,
-        date: formattedDate,
-        time: formattedTime,
+        date: createdAt
+            ? createdAt.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              })
+            : null,
+          time: createdAt
+            ? createdAt.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            : null,
         sender: user
       };
     }));
