@@ -233,8 +233,8 @@ router.get('/', authenticateToken, async (req, res) => {
             Sequelize.literal(`(
             SELECT COUNT(*)
             FROM post_applications AS pa
-            WHERE pa.post_id = Post.id
-          )`), 'application_count'
+            WHERE pa.post_id = "Posts".id
+            )`), 'application_count'
         ],
           [
             Sequelize.literal(`EXISTS (
