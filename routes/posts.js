@@ -137,6 +137,31 @@ router.post('/', authenticateToken, upload.single('media'), async (req, res) => 
   }
 });
 
+router.post('/apply/:postId', authenticateToken, async (req, res) => {
+  const userId = req.user.user_id;
+  const { postId } = req.params;
+
+  try {
+    // Check if already applied
+    const existing = await PostApplication.findOne({
+      where: { post_id: postId, user_id: userId }
+    });
+
+    if (existing) {
+      return res.status(400).json({ error: 'Already applied to this post' });
+    }
+
+    const application = await PostApplication.create({
+      post_id: postId,
+      user_id: userId
+    });
+
+    res.status(201).json({ message: 'Successfully applied', application });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 router.put('/:id', authenticateToken, upload.single('media'), async (req, res) => {
   try {
