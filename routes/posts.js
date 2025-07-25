@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Post ,Application, Like} = require('../models');
+const { Post ,Application, Like,PostApplication} = require('../models');
 const upload = require('../middleware/upload'); // Multer setup
 const { Op, Sequelize } = require('sequelize');
 const authenticateToken = require("../middleware/auth");
