@@ -281,8 +281,8 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
     // Fetch all chat messages for the project
     const rawMessages = await ProjectTeamChat.findAll({
       where: { project_id },
-      attributes: ['id', 'message', 'sender_id', 'created_at'], // explicitly include created_at
-      order: [['created_at', 'ASC']]
+      attributes: ['id', 'message', 'sender_id', 'createdAt'], // explicitly include created_at
+      order: [['createdAt', 'ASC']]
     });
 
     // Format messages with user details and formatted timestamps
@@ -295,16 +295,16 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
       return {
         id: msg.id,
         message: msg.message,
-        created_at: msg.created_at,
-        date: msg.created_at
-            ? msg.created_at.toLocaleDateString('en-IN', {
+        created_at: msg.createdAt,
+        date: msg.createdAt
+            ? msg.createdAt.toLocaleDateString('en-IN', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
               })
             : null,
-          time: msg.created_at
-            ? msg.created_at.toLocaleTimeString('en-IN', {
+          time: msg.createdAt
+            ? msg.createdAt.toLocaleTimeString('en-IN', {
                 hour: '2-digit',
                 minute: '2-digit'
               })
