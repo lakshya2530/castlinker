@@ -281,6 +281,7 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
     // Fetch all chat messages for the project
     const rawMessages = await ProjectTeamChat.findAll({
       where: { project_id },
+      attributes: ['id', 'message', 'sender_id', 'created_at'], // explicitly include created_at
       order: [['created_at', 'ASC']]
     });
 
