@@ -326,6 +326,33 @@ router.post("/create-milestone", authenticateToken, async (req, res) => {
   }
 });
 
+router.put("/milestone/:id/complete", authenticateToken, async (req, res) => {
+  try {
+    const milestoneId = req.params.id;
+
+    // 🔒 Optional: ensure the milestone belongs to the authenticated user
+    const milestone = await Milestone.findOne({
+      where: {
+        id: milestoneId,
+        user_id: req.user.user_id,
+      },
+    });
+
+    if (!milestone) {
+      return res.status(404).json({ message: "Milestone not found" });
+    }
+
+    // ✅ Update the milestone status to "complete"
+    milestone.status = "complete";
+    await milestone.save();
+
+    res.json({ message: "Milestone marked as complete", milestone });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating milestone", error });
+  }
+});
+
 router.post("/add-project-member", authenticateToken, async (req, res) => {
   try {
     const { team_member_id, role,project_id } = req.body;
