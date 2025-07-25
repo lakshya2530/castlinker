@@ -291,21 +291,20 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
         attributes: ['id', 'username', 'profile_pic_url']
       });
 
-      const createdAt = msg.created_at ? new Date(msg.created_at) : null;
       
       return {
         id: msg.id,
         message: msg.message,
         created_at: msg.created_at,
-        date: createdAt
-            ? createdAt.toLocaleDateString('en-IN', {
+        date: msg.created_at
+            ? msg.created_at.toLocaleDateString('en-IN', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
               })
             : null,
-          time: createdAt
-            ? createdAt.toLocaleTimeString('en-IN', {
+          time: msg.created_at
+            ? msg.created_at.toLocaleTimeString('en-IN', {
                 hour: '2-digit',
                 minute: '2-digit'
               })
