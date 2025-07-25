@@ -306,7 +306,7 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
 
 router.post("/create-milestone", authenticateToken, async (req, res) => {
   try {
-    const { title, description, due_date,project_id } = req.body;
+    const { title, description, due_date,project_id,status } = req.body;
     const userId = req.user.user_id; // ✅ from token
 
 
@@ -315,6 +315,7 @@ router.post("/create-milestone", authenticateToken, async (req, res) => {
       project_id,
       description,
       due_date,
+      status,
       user_id: userId,
     });
 
