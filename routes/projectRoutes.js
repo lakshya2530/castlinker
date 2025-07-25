@@ -315,7 +315,7 @@ router.post("/create-milestone", authenticateToken, async (req, res) => {
       project_id,
       description,
       due_date,
-      status,
+      status:"pending",
       user_id: userId,
     });
 
