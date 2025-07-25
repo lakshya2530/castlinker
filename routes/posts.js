@@ -229,13 +229,13 @@ router.get('/', authenticateToken, async (req, res) => {
             )`),
             'total_likes'
           ],
-        [
-            Sequelize.literal(`(
-            SELECT COUNT(*)
-            FROM post_applications AS pa
-            WHERE pa.post_id = Post.id
-          )`), 'application_count'
-        ],
+        // [
+        //     Sequelize.literal(`(
+        //     SELECT COUNT(*)
+        //     FROM post_applications AS pa
+        //     WHERE pa.post_id = Post.id
+        //   )`), 'application_count'
+        // ],
           [
             Sequelize.literal(`EXISTS (
               SELECT 1 FROM likes AS l
