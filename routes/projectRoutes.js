@@ -293,6 +293,12 @@ router.get('/:project_id/chat', authenticateToken, async (req, res) => {
         id: msg.id,
         message: msg.message,
         created_at: msg.created_at,
+        date: new Date(msg.created_at).toLocaleDateString('en-IN', {
+          day: '2-digit', month: '2-digit', year: 'numeric'
+        }),
+        time: new Date(msg.created_at).toLocaleTimeString('en-IN', {
+          hour: '2-digit', minute: '2-digit'
+        }),
         sender: user  // manually attached
       };
     }));
