@@ -214,6 +214,25 @@ router.post('/change-password', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+router.post('/theme', authenticateToken, async (req, res) => {
+  const { theme } = req.body;
+  if (!['light', 'dark'].includes(theme)) {
+    return res.status(400).json({ success: false, message: 'Invalid theme value' });
+  }
+
+  try {
+    const user = await User.findByPk(req.user.user_id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    user.theme = theme;
+    await user.save();
+
+    res.json({ success: true, message: `Theme updated to ${theme}` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error updating theme', error: error.message });
+  }
+});
 router.put('/update-profile', authenticateToken, upload.fields([
   { name: 'profile_image', maxCount: 1 },
   { name: 'cover_image', maxCount: 1 },

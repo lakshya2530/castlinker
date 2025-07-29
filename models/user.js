@@ -86,7 +86,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: false,
-      }
+      },
+      theme: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'light',
+        validate: {
+          isIn: [['light', 'dark']],
+        },
+      },
+    
       //special_skills: DataTypes.TEXT
            
     }, {
