@@ -14,12 +14,13 @@ const authMiddleware = require('../middleware/auth');
 
 router.get('/',authMiddleware, async (req, res) => {
     try {
-        console.log(req);
       // const userId = req.user.user_id; // dynamically take logged in user id
       const userId = req.user.user_id;
       const applicationCount = await Application.count({ where: { user_id: userId } });
      // const connectionCount = await Connection.count({ where: { user_id: userId } });
       const likeCount = await Like.count({ where: { user_id: userId } });
+      const connectionCount = await Connection.count({ where: { user_id: userId } });
+      const projectCount = await Project.count({ where: { user_id: userId } });
     //   const reviewRating = await Review.findOne({
     //     attributes: [[sequelize.fn('AVG', sequelize.col('rating')), 'averageRating']],
     //     where: { user_id: userId },
@@ -56,7 +57,8 @@ router.get('/',authMiddleware, async (req, res) => {
         success: true,
         data: {
           applications: applicationCount,
-          connections: 0,
+          connections: connectionCount,
+          total_projects: projectCount,
           likes: likeCount,
           rating: Number(reviewRating?.dataValues?.averageRating || 0).toFixed(1),
           recentJobs: recentJobs,

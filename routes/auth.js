@@ -188,6 +188,32 @@ router.put('/update-social-links', authenticateToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+router.post('/change-password', authenticateToken, async (req, res) => {
+  const { old_password, new_password, confirm_password } = req.body;
+
+  if (!old_password || !new_password || !confirm_password)
+    return res.status(400).json({ error: 'All fields are required' });
+
+  if (new_password !== confirm_password)
+    return res.status(400).json({ error: 'Passwords do not match' });
+
+  try {
+    const user = await User.findByPk(req.user.user_id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const match = await bcrypt.compare(old_password, user.password);
+    if (!match) return res.status(401).json({ error: 'Incorrect old password' });
+
+    user.password = await bcrypt.hash(new_password, 10);
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 router.put('/update-profile', authenticateToken, upload.fields([
   { name: 'profile_image', maxCount: 1 },
   { name: 'cover_image', maxCount: 1 },
