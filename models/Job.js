@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     company: { type: DataTypes.STRING, allowNull: false },
     company_logo_url: DataTypes.TEXT,
     experience_level: DataTypes.TEXT,
-    job_type: { type: DataTypes.ENUM("Full-time", "Part-time", "Contract"), allowNull: false },
+    job_type: { type: DataTypes.STRING, allowNull: false },
     role_category: { type: DataTypes.STRING, allowNull: false },
     location: { type: DataTypes.STRING, allowNull: false },
     location_type: { type: DataTypes.ENUM("On-site", "Remote", "Hybrid"), allowNull: false },
