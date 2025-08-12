@@ -62,5 +62,5 @@ db.ProjectTeam = require('./ProjectTeam')(sequelize, DataTypes);
 db.Milestone = require('./Milestone')(sequelize, DataTypes);
 db.ProjectTeamChat = require('./ProjectTeamChat')(sequelize, DataTypes);
 db.PostApplication = require('./PostApplication')(sequelize, DataTypes);
-
+db.UserLike = require('./UserLike')(sequelize, DataTypes);
 module.exports = db;
