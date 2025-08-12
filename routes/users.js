@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../models"); // ✅ Import db
-const { User,UserLike } = require('../models');
+const { User,UserLike,sequelize } = require('../models');
 const authenticateToken = require('../middleware/auth'); // Adjust path as needed
 
 router.post("/register", async (req, res) => {
