@@ -29,10 +29,9 @@ router.post("/register", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 router.get('/', async (req, res) => {
   try {
-    const likerId = req.query.liker_id || null; // Optional for is_like
+    const currentUserId = req.query.user_id || null; // The logged-in user ID, used for is_like & is_connected
 
     const users = await User.findAll({
       attributes: {
@@ -46,16 +45,26 @@ router.get('/', async (req, res) => {
             )`),
             'total_likes'
           ],
-          // Only calculate is_like if liker_id is provided
-          ...(likerId ? [
+          // is_like: only if currentUserId provided
+          ...(currentUserId ? [
             [
               sequelize.literal(`(
                 SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END
                 FROM user_likes ul
-                WHERE ul.liker_id = ${likerId} 
-                AND ul.liked_id = "User".id
+                WHERE ul.liker_id = ${currentUserId} 
+                  AND ul.liked_id = "User".id
               )`),
               'is_like'
+            ],
+            // is_connected: check connection
+            [
+              sequelize.literal(`(
+                SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END
+                FROM user_connections uc
+                WHERE (uc.user_id = ${currentUserId} AND uc.connected_user_id = "User".id)
+                   OR (uc.connected_user_id = ${currentUserId} AND uc.user_id = "User".id)
+              )`),
+              'is_connected'
             ]
           ] : [])
         ]
@@ -68,6 +77,46 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// router.get('/', async (req, res) => {
+//   try {
+//     const likerId = req.query.liker_id || null; // Optional for is_like
+
+//     const users = await User.findAll({
+//       attributes: {
+//         include: [
+//           // Total likes each user has
+//           [
+//             sequelize.literal(`(
+//               SELECT COUNT(*) 
+//               FROM user_likes ul
+//               WHERE ul.liked_id = "User".id
+//             )`),
+//             'total_likes'
+//           ],
+//           // Only calculate is_like if liker_id is provided
+//           ...(likerId ? [
+//             [
+//               sequelize.literal(`(
+//                 SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END
+//                 FROM user_likes ul
+//                 WHERE ul.liker_id = ${likerId} 
+//                 AND ul.liked_id = "User".id
+//               )`),
+//               'is_like'
+//             ]
+//           ] : [])
+//         ]
+//       }
+//     });
+
+//     res.json({ success: true, data: users });
+
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 // router.get('/', async (req, res) => {
   
 //   try {
