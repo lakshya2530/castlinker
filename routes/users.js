@@ -31,7 +31,7 @@ router.post("/register", async (req, res) => {
 });
 router.get('/', async (req, res) => {
   try {
-    const currentUserId = req.query.user_id || null; // The logged-in user ID, used for is_like & is_connected
+    const currentUserId = req.query.liker_id || null; // The logged-in user ID, used for is_like & is_connected
 
     const users = await User.findAll({
       attributes: {
