@@ -60,7 +60,7 @@ router.get('/', async (req, res) => {
             [
               sequelize.literal(`(
                 SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END
-                FROM user_connections uc
+                FROM connections uc
                 WHERE (uc.user_id = ${currentUserId} AND uc.connected_user_id = "User".id)
                    OR (uc.connected_user_id = ${currentUserId} AND uc.user_id = "User".id)
               )`),
