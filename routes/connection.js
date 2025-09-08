@@ -26,12 +26,14 @@ router.post('/connect', authenticateToken, async (req, res) => {
         user_id: userId,
         connected_user_id: target_user_id
       });
+      const user = await User.findByPk(userId);
+
       await Notification.create({
         user_id: target_user_id,
         sender_id: userId,
         type: 'connection_request',
         reference_id: connection.id,
-        content: `User ${userId} has connected with you.`,
+        content: `${user.username} has sent you a connection request.`,
       });
       return res.json({ success: true, message: "User connected" });
     }

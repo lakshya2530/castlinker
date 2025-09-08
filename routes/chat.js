@@ -146,12 +146,14 @@ router.post('/send', async (req, res) => {
     //}
 
     const newMessage = await Message.create({ sender_id, receiver_id, content });
+    const user = await User.findByPk(sender_id);
+
     await Notification.create({
       user_id: receiver_id,
       sender_id,
       type: 'message',
       reference_id: newMessage.id,
-      content: `New message from user ${sender_id}`,
+      content: `${user.username} sent you a message.`,
     });
     return res.json({ success: true, message: 'Message sent',is_first_time, data: newMessage });
   } catch (error) {
