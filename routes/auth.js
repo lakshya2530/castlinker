@@ -150,6 +150,7 @@ router.post("/login", async (req, res) => {
 router.get('/profile', async (req, res) => {
   try {
     const user = await User.findByPk(req.query.user_id);
+    const userId = req.query.user_id;
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
