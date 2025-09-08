@@ -164,6 +164,16 @@ router.get('/profile', async (req, res) => {
       }
     }
 
+      // Get total likes
+      const totalLikes = await sequelize.query(
+        `SELECT COUNT(*) AS total_likes FROM user_likes WHERE liked_id = :userId`,
+        {
+          replacements: { userId },
+          type: sequelize.QueryTypes.SELECT
+        }
+      );
+  
+      userData.total_likes = parseInt(totalLikes[0].total_likes, 10);
 
     res.json({ success: true, data: userData });
   } catch (error) {
