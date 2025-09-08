@@ -22,7 +22,7 @@ router.post('/connect', authenticateToken, async (req, res) => {
       return res.json({ success: true, message: "User disconnected" });
     } else {
       // Connect
-      await Connection.create({
+      const connection=  await Connection.create({
         user_id: userId,
         connected_user_id: target_user_id
       });
