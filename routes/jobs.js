@@ -453,6 +453,16 @@ router.post("/submit", authenticateToken, async (req, res) => {
 
     const job = await Job.findByPk(job_id);
 
+    if (job) {
+      await Notification.create({
+        user_id: job.user_id,                // Owner of the job
+        sender_id: req.user.user_id,
+        type: 'job_application',
+        reference_id: application.id,
+        content: `New application submitted for your job "${job.title}"`,
+      });
+    }
+
     if (!job) {
       return res.status(404).json({
         success: false,

@@ -3,7 +3,7 @@ const router = express.Router();
 // const { Message, User } = require('../models');
 const { Op, Sequelize } = require('sequelize');
 const authenticateToken = require("../middleware/auth");
-const { ChatRequest, Message,User } = require('../models');
+const { ChatRequest, Message,User,Notification } = require('../models');
 
 // 📨 Inbox (last conversations)
 // router.get('/inbox/:userId', async (req, res) => {
@@ -146,6 +146,13 @@ router.post('/send', async (req, res) => {
     //}
 
     const newMessage = await Message.create({ sender_id, receiver_id, content });
+    await Notification.create({
+      user_id: receiver_id,
+      sender_id,
+      type: 'message',
+      reference_id: newMessage.id,
+      content: `New message from user ${sender_id}`,
+    });
     return res.json({ success: true, message: 'Message sent',is_first_time, data: newMessage });
   } catch (error) {
     console.error(error);

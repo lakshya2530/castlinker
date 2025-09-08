@@ -1,4 +1,4 @@
-const { Connection,User } = require('../models');
+const { Connection,User,Notification } = require('../models');
 const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middleware/auth'); // Adjust path as needed
@@ -25,6 +25,13 @@ router.post('/connect', authenticateToken, async (req, res) => {
       await Connection.create({
         user_id: userId,
         connected_user_id: target_user_id
+      });
+      await Notification.create({
+        user_id: target_user_id,
+        sender_id: userId,
+        type: 'connection_request',
+        reference_id: connection.id,
+        content: `User ${userId} has connected with you.`,
       });
       return res.json({ success: true, message: "User connected" });
     }
